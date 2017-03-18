@@ -10,7 +10,7 @@ def xiaobaods_a02(date="",category="牛仔裤",length=7,SQL="xiaobaods",table="b
     import pymysql
     from dateutil.parser import parse
     SQL_msg = {"local":{"host":"127.0.0.1","port":3306,"user":"root","charset":"utf8","passwd":"","db":"baoersqlbasic"},
-               "xiaobaods":{"host":"101.201.237.58","port":3306,"user":"program_default","charset":"utf8","passwd":"KQPp5wwZJG33fwFs","db":"baoersqlbasic"}}
+               "xiaobaods":{"host":"101.201.237.58","port":3306,"user":"program_select","charset":"utf8","passwd":"TBj7NYnDR5hwKDYv","db":"baoersqlbasic"}}
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     if category not in ["牛仔裤","打底裤","休闲裤"]:
         category="牛仔裤"
