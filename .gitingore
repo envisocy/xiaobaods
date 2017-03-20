@@ -1,0 +1,19 @@
+# Windows:      # 忽略缩略图等垃圾文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python:       # 忽略python编译文件
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# jupyter:		# jupyter notebook
+*.ipynb
+*.ipynb_checkpoints
+
+# My configurations:    # 忽略自身信息文件
+pykeys.ini
