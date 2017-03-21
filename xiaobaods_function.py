@@ -1,12 +1,24 @@
 #!usr/bin/env python3
 #! -*- coding: gbk -*-
+# SQL_msg
+def conftodict(filename,path=""):
+    dic={}
+    import configparser
+    cp = configparser.SafeConfigParser()
+    cp.read(path+filename)
+    s = cp.sections()
+    for i in s:
+        dic[i]={}
+        for j in cp.options(i):
+            dic[i][j]=cp.get(i,j)
+    return dic
+SQL_msg = conftodict("xiaobaods_SQL.conf")
 # 2017-03-20
 def xiaobaods_a01(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="»»œ˙≈≈√˚",debug=0):
     import pandas as pd
     import datetime
     import pymysql
     from dateutil.parser import parse
-    SQL_msg = {"local":{"host":"127.0.0.1","port":3306,"user":"root","charset":"utf8","passwd":"","db":"baoersqlbasic"},"xiaobaods":{"host":"101.201.237.58","port":3306,"user":"program_default","charset":"utf8","passwd":"KQPp5wwZJG33fwFs","db":"baoersqlbasic"}}
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     if category not in ["≈£◊–ø„","¥Úµ◊ø„","–›œ–ø„"]:
         category="≈£◊–ø„"
@@ -22,7 +34,7 @@ def xiaobaods_a01(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",table="bc_a
         variable="»»œ˙≈≈√˚"
     # Try to connect with the mysql and back a date which minimum.
     try:
-        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=SQL_msg[SQL]["port"], user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
         cursor = conn.cursor()
         cursor.execute("SELECT min(`»’∆⁄`),max(`»’∆⁄`) from "+table+" where `¿‡ƒø`='"+category+"';")
         date_limit = cursor.fetchall()
@@ -45,7 +57,7 @@ def xiaobaods_a01(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",table="bc_a
         sql_select_m += ",MAX(CASE ST.»’∆⁄ WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `»’∆⁄£∫"+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
     sql_select_e="FROM "+table+" AS CT LEFT JOIN "+table+" AS ST ON SUBSTRING(CT.`±¶±¥¡¥Ω”` ,- 12) = SUBSTRING(ST.`±¶±¥¡¥Ω”` ,- 12) WHERE CT.`»’∆⁄` = "+str(date).replace("-","")+" AND CT.¿‡ƒø = '"+category+"' AND ST.»’∆⁄ >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.¿‡ƒø = '"+category+"' GROUP BY CT.`"+variable+"` ORDER BY CT.`»»œ˙≈≈√˚`;"
     # read msg from Mysql
-    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=SQL_msg[SQL]["port"], user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
     cursor.close()
     conn.close()
@@ -66,8 +78,6 @@ def xiaobaods_a02(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",table="bc_a
     import datetime
     import pymysql
     from dateutil.parser import parse
-    SQL_msg = {"local":{"host":"127.0.0.1","port":3306,"user":"root","charset":"utf8","passwd":"","db":"baoersqlbasic"},
-               "xiaobaods":{"host":"101.201.237.58","port":3306,"user":"program_select","charset":"utf8","passwd":"TBj7NYnDR5hwKDYv","db":"baoersqlbasic"}}
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     if category not in ["≈£◊–ø„","¥Úµ◊ø„","–›œ–ø„"]:
         category="≈£◊–ø„"
@@ -91,7 +101,7 @@ def xiaobaods_a02(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",table="bc_a
             variable="»»œ˙≈≈√˚"
     # Try to connect with the mysql and back a date which minimum.
     try:
-        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=SQL_msg[SQL]["port"], user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
         cursor = conn.cursor()
         cursor.execute("SELECT min(`»’∆⁄`),max(`»’∆⁄`) from "+table+" where `¿‡ƒø`='"+category+"';")
         date_limit = cursor.fetchall()
@@ -113,7 +123,7 @@ def xiaobaods_a02(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",table="bc_a
         sql_select_m += ",MAX(CASE ST.»’∆⁄ WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `»’∆⁄£∫"+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
     sql_select_e="FROM "+table+" AS CT LEFT JOIN "+table+" AS ST ON SUBSTRING(CT.`±¶±¥¡¥Ω”` ,- 12) = SUBSTRING(ST.`±¶±¥¡¥Ω”` ,- 12) WHERE CT.`»’∆⁄` = "+str(date).replace("-","")+" AND CT.¿‡ƒø = '"+category+"' AND ST.»’∆⁄ >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.¿‡ƒø = '"+category+"' GROUP BY CT.`"+variable+"` ORDER BY CT.`»»œ˙≈≈√˚`;"
     # read msg from Mysql
-    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=SQL_msg[SQL]["port"], user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
     conn.close()
     df = df.fillna(fillna)
@@ -148,8 +158,6 @@ def xiaobaods_w03(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",choice="»»À
     import datetime
     import pymysql
     from dateutil.parser import parse
-    SQL_msg = {"local":{"host":"127.0.0.1","port":3306,"user":"root","charset":"utf8","passwd":"","db":"baoersqlbasic"},
-               "xiaobaods":{"host":"101.201.237.58","port":3306,"user":"program_default","charset":"utf8","passwd":"KQPp5wwZJG33fwFs","db":"baoersqlbasic"}}
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     choice_list = {"»»À—–ﬁ Œ¥ ":{"table":"bc_searchwords_hotwords","variable":("À—À˜»À∆¯","œ‡πÿÀ—À˜¥  ˝","µ„ª˜¬ ","µ„ª˜»À∆¯","÷ß∏∂◊™ªØ¬ ","÷±Õ®≥µ≤Œøºº€")},
                   "»»À—∆∑≈∆¥ ":{"table":"bc_searchwords_hotwords","variable":("À—À˜»À∆¯","œ‡πÿÀ—À˜¥  ˝","µ„ª˜¬ ","µ„ª˜»À∆¯","÷ß∏∂◊™ªØ¬ ","÷±Õ®≥µ≤Œøºº€")},
@@ -182,7 +190,7 @@ def xiaobaods_w03(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",choice="»»À
         date=parse(date).date()  # –ﬁ∏ƒ»’∆⁄∏Ò Ω
     # Try to connect with the mysql and back a date which minimum.
     try:
-        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=SQL_msg[SQL]["port"], user=SQL_msg[SQL]["user"],passwd=SQL_msg[SQL]["passwd"],
+        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"],passwd=SQL_msg[SQL]["passwd"],
                                charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
         cursor = conn.cursor()
         cursor.execute("SELECT min(`»’∆⁄`),max(`»’∆⁄`) from "+choice_list[choice]["table"]+" where `¿‡ƒø`='"+category+"' and `◊÷∂Œ`='"+choice+"';")
@@ -208,7 +216,7 @@ def xiaobaods_w03(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",choice="»»À
         sql_select_m += ",MAX(CASE ST.»’∆⁄ WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `»’∆⁄£∫"+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
     sql_select_e="FROM "+choice_list[choice]["table"]+" AS CT LEFT JOIN "+choice_list[choice]["table"]+" AS ST ON CT.À—À˜¥  = ST.À—À˜¥  WHERE CT.`»’∆⁄` = "+str(date).replace("-","")+" AND CT.¿‡ƒø = '"+category+"' AND CT.◊÷∂Œ='"+choice+"' AND ST.◊÷∂Œ='"+choice+"' AND ST.»’∆⁄ >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.¿‡ƒø = '"+category+"' GROUP BY CT.`"+variable+"` ORDER BY CT.`≈≈√˚`;"
     # read msg from Mysql
-    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=SQL_msg[SQL]["port"], user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
     conn.close()
     # Order
@@ -247,11 +255,11 @@ def xiaobaods_w03(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",choice="»»À
         print( "  SQL_choice: %r \n- category: %r \n- length: %r \n- date: %r \n- SQL: %r"%(SQL,category,str(length),str(date),sql_select_f+sql_select_m+sql_select_e))
     elif debug== 2:
         print ("- Running time£∫%.4f s"%(time.time()-time_s))
-        print("- date£∫%r \n- category£∫%r \n- length£∫%r \n- SQL£∫%r \n- table: %r \n- variable£∫%r \n- sort: %r \n- fillna: %r \n- debug£∫%r \n- path: %r"%(str(date),category,str(length),SQL,choice_list[choice]["table"],variable,sort,fillna,debug,path))
+        print("- date£∫%r \n- category£∫%r \n- length£∫%r \n- SQL£∫%r \n- choice: %r \n- table: %r \n- variable£∫%r \n- sort: %r \n- fillna: %r \n- debug£∫%r \n- path: %r"%(str(date),category,str(length),SQL,choice,choice_list[choice]["table"],variable,sort,fillna,debug,path))
     elif debug== 8:
         print ("- Running time£∫%.4f s"%(time.time()-time_s))
         return df
-    elif debug==9:
+    elif debug== 9:
         import os
         print ("- Running time£∫%.4f s"%(time.time()-time_s))
         path_default=os.path.join(os.path.expanduser("~"), 'Desktop')

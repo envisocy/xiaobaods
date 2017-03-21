@@ -16,4 +16,4 @@ build
 *.ipynb_checkpoints
 
 # My configurations:    # 忽略自身信息文件
-xiaobaods_keys.ini
+xiaobaods_SQL.conf
