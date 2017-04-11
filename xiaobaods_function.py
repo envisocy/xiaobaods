@@ -7,7 +7,11 @@ import datetime
 import pandas as pd
 import configparser
 import time
+import sys,os
 def conftodict(filename,path=""):
+    # 2017-04-11 Ìí¼Ó½Å±¾Â·¾¶Ëø¶¨
+    if path=="":
+        path = os.path.dirname(__file__)+"\\"
     dic={}
     cp = configparser.SafeConfigParser()
     cp.read(path+filename)
@@ -71,8 +75,8 @@ def xiaobaods_a01(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_a
         print("date=",date," category=",category," length=",length," SQL=",SQL," variable=",variable,"debug=",debug)
     elif debug== 1:
         print( "  SQL_choice: ",SQL,"  category: ",category,"  length: ",str(length),"  date: ",str(date),"  SQL: ",sql_select_f,sql_select_m,sql_select_e)
-# 2017-03-20
-def xiaobaods_a02(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="ÈÈÏúÅÅÃû",fillna="",debug=0,path=""):
+def xiaobaods_a02(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="ÈÈÏúÅÅÃû",fillna="",debug=0,path="",keyword="ÈÕÆÚ:"):
+    # 2017-04-11 Ìí¼ÓkeywordÒş²Ø²ÎÊı£º'ÈÕÆÚ:'
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     if category not in ["Å£×Ğ¿ã","´òµ×¿ã","ĞİÏĞ¿ã"]:
@@ -147,7 +151,8 @@ def xiaobaods_a02(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_a
         except Exception as e:
             print("> Êä³öCSVÎÄ¼şÊ§°Ü£¬´íÎóÔ­Òò£º",e)
 # 2017-03-20
-def xiaobaods_w03(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑºËĞÄ´Ê",variable="ÅÅÃû",sort=0,fillna="",debug=0,path=""):
+def xiaobaods_w03(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑºËĞÄ´Ê",variable="ÅÅÃû",fillna="",debug=0,path="",keyword="ÈÕÆÚ:"):
+    # 2017-04-11 ĞŞ²¹fillnaµÄBUG£¬Ìí¼ÓkeywordÒş²Ø²ÎÊı£º'ÈÕÆÚ:'
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     choice_list = {"ÈÈËÑĞŞÊÎ´Ê":{"table":"bc_searchwords_hotwords","variable":("ËÑË÷ÈËÆø","Ïà¹ØËÑË÷´ÊÊı","µã»÷ÂÊ","µã»÷ÈËÆø","Ö§¸¶×ª»¯ÂÊ","Ö±Í¨³µ²Î¿¼¼Û")},
@@ -204,40 +209,13 @@ def xiaobaods_w03(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈË
         sql_select_f += ",CT.`"+choice_list[choice]["variable"][i]+"`"
     sql_select_m=""
     for i in range(length):
-        sql_select_m += ",MAX(CASE ST.ÈÕÆÚ WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `ÈÕÆÚ£º"+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
+        sql_select_m += ",MAX(CASE ST.ÈÕÆÚ WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `"+keyword+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
     sql_select_e="FROM "+choice_list[choice]["table"]+" AS CT LEFT JOIN "+choice_list[choice]["table"]+" AS ST ON CT.ËÑË÷´Ê = ST.ËÑË÷´Ê WHERE CT.`ÈÕÆÚ` = "+str(date).replace("-","")+" AND CT.ÀàÄ¿ = '"+category+"' AND CT.×Ö¶Î='"+choice+"' AND ST.×Ö¶Î='"+choice+"' AND ST.ÈÕÆÚ >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.ÀàÄ¿ = '"+category+"' GROUP BY CT.`"+variable+"` ORDER BY CT.`ÅÅÃû`;"
     # read msg from Mysql
     conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
     conn.close()
-    # Order
-    if sort not in [0,1,2]:
-        sort=0
-    if variable=="ÅÅÃû":
-        sort_p = 1
-        fillna_default=501
-    else:
-        sort_p = -1
-        fillna_default=0
-
-    if sort==0:
-        df = df.fillna(fillna)
-        df["sort"]=df["ÅÅÃû"]
-    elif sort==1:
-        import numpy as np
-        # Sorting algorithm:¾ù²îÅÅĞò
-        df = df.fillna(fillna_default)
-        df["sort"]=0
-        for i in range(len(df)):
-            df.ix[i,"sort"]=(np.mean(df.iloc[i,-length:])-np.mean(df.iloc[i,-3:]))/df.ix[i,"ÅÅÃû"]*sort_p
-    elif sort==2:
-        import numpy as np
-        # Sorting algorithm:¾ù²î·½ÅÅĞò
-        df = df.fillna(fillna_default)
-        df["sort"]=0
-        for i in range(len(df)):
-            df.ix[i,"sort"]=(np.mean(df.iloc[i,-length:])-np.mean(df.iloc[i,-3:]))/df.ix[i,"ÅÅÃû"]**2*sort_p
-    df.sort_values("sort",inplace=True)
+    df = df.fillna(fillna)
     # Debug
     if debug not in [1,2,8,9]:
         print(df.to_json(orient="index"))
@@ -246,7 +224,7 @@ def xiaobaods_w03(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈË
         print( "  SQL_choice: %r \n- category: %r \n- length: %r \n- date: %r \n- SQL: %r"%(SQL,category,str(length),str(date),sql_select_f+sql_select_m+sql_select_e))
     elif debug== 2:
         print ("- Running time£º%.4f s"%(time.time()-time_s))
-        print("- date£º%r \n- category£º%r \n- length£º%r \n- SQL£º%r \n- choice: %r \n- table: %r \n- variable£º%r \n- sort: %r \n- fillna: %r \n- debug£º%r \n- path: %r"%(str(date),category,str(length),SQL,choice,choice_list[choice]["table"],variable,sort,fillna,debug,path))
+        print("- date£º%r \n- category£º%r \n- length£º%r \n- SQL£º%r \n- choice: %r \n- table: %r \n- variable£º%r \n- fillna: %r \n- debug£º%r \n- path: %r"%(str(date),category,str(length),SQL,choice,choice_list[choice]["table"],variable,fillna,debug,path))
     elif debug== 8:
         print ("- Running time£º%.4f s"%(time.time()-time_s))
         return df
@@ -257,80 +235,6 @@ def xiaobaods_w03(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈË
         if not os.path.isdir(path):
             path = path_default
         csv_filename="¡¾Êı¾İ×é¡¿["+choice_list[choice]["table"].split("_")[-1]+"_"+category+"_"+choice+"]"+variable+"_"+datetime.datetime.strftime(date,"%m%d")+"-"+str(length)+"_"+SQL+".csv"
-        try:
-            df.to_csv(path+"\\"+csv_filename)
-            print("> Êä³öCSVÎÄ¼ş£º",path,",",csv_filename)
-        except Exception as e:
-            print("> Êä³öCSVÎÄ¼şÊ§°Ü£¬´íÎóÔ­Òò£º",e)
-def xiaobaods_s01(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_searchwords_hotwords",variable="ÈÈÏúÅÅÃû",fillna="",debug=0,path=""):
-    # db:bc_searchwords_hotwords
-    # 2017-04-10
-    time_s = time.time()
-    latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
-    if category not in ["Å£×Ğ¿ã","´òµ×¿ã","ĞİÏĞ¿ã"]:
-        category="Å£×Ğ¿ã"
-    if length>30 or length<3:
-        length=7
-    table="bc_searchwords_hotwords"
-    if date=="":
-        date = latest_date
-    else:
-        date=parse(date).date()  # ĞŞ¸ÄÈÕÆÚ¸ñÊ½
-    if variable not in ["ÈÈËÑĞŞÊÎ´Ê","ÈÈËÑÆ·ÅÆ´Ê","ÈÈËÑËÑË÷´Ê","ÈÈËÑºËĞÄ´Ê","ÈÈËÑ³¤Î²´Ê"]:
-        variable="ÈÈËÑËÑË÷´Ê"
-    # return time range
-    try:
-        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
-        cursor = conn.cursor()
-        cursor.execute("SELECT min(`ÈÕÆÚ`),max(`ÈÕÆÚ`) from "+table+" where `ÀàÄ¿`='"+category+"'and `×Ö¶Î`='"+variable+"';")
-        date_limit = cursor.fetchall()
-        date_floor = date_limit[0][0]
-        date_ceiling = date_limit[0][1]
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        return e
-    if date > latest_date:
-        date = latest_date
-    if date > date_ceiling:
-        date = date_ceiling
-    if date < date_floor + datetime.timedelta(length-1):
-        date = date_floor + datetime.timedelta(length-1)
-    # Main program.
-    sql_select_f="SELECT CT.`ÈÕÆÚ`,CT.`ÀàÄ¿`,CT.`ÇşµÀ`,CT.`×Ö¶Î`,CT.`ÅÅÃû`,CT.`ËÑË÷´Ê`,CT.`Ïà¹ØËÑË÷´ÊÊı`,CT.`ÉÌ³Çµã»÷Õ¼±È`,CT.`µã»÷ÂÊ`,CT.`µã»÷ÈËÆø`,CT.`Ö§¸¶×ª»¯ÂÊ`,CT.`Ö±Í¨³µ²Î¿¼¼Û`"
-    sql_select_m=""
-    for i in range(length):
-        sql_select_m += ",MAX(CASE ST.ÈÕÆÚ WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST.`ÅÅÃû` ELSE NULL END) AS `ÈÕÆÚ£º"+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
-    sql_select_e="FROM "+table+" AS CT LEFT JOIN "+table+" AS ST ON CT.`ËÑË÷´Ê` = ST.`ËÑË÷´Ê` WHERE CT.`ÈÕÆÚ` = "+str(date).replace("-","")+" AND CT.ÀàÄ¿ = '"+category+"' AND CT.×Ö¶Î='"+variable+"' AND ST.×Ö¶Î='"+variable+"' AND ST.ÈÕÆÚ >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.ÀàÄ¿ = '"+category+"' GROUP BY CT.`ËÑË÷´Ê` ORDER BY CT.`ÅÅÃû`;"
-    # read msg from Mysql
-    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
-    df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
-    conn.close()
-    df = df.fillna(fillna)
-    # form change
-    if variable in ["ÈÈËÑĞŞÊÎ´Ê","ÈÈËÑËÑË÷´Ê","ÈÈËÑ³¤Î²´Ê"]:
-        df.drop("Ïà¹ØËÑË÷´ÊÊı",axis=1,inplace=True)
-    elif variable in ["ÈÈËÑÆ·ÅÆ´Ê","ÈÈËÑºËĞÄ´Ê"]:
-        df.drop("ÉÌ³Çµã»÷Õ¼±È",axis=1,inplace=True)
-    # debug return
-    if debug not in [1,2,8,9]:
-        print(df.to_json(orient="index"))
-    elif debug== 8:
-        print ("- Running time£º%.4f s"%(time.time()-time_s))
-        return df
-    elif debug== 2:
-        print ("- Running time£º%.4f s"%(time.time()-time_s))
-        print("- date£º%r \n- category£º%r \n- length£º%r \n- SQL£º%r \n- table: %r \n- variable£º%r \n- debug£º%r \n- path: %r"%(str(date),category,str(length),SQL,table,variable,debug,path))
-    elif debug== 1:
-        print ("- Running time£º%.4f s"%(time.time()-time_s))
-        print( "  SQL_choice: %r \n- category: %r \n- length: %r \n- date: %r \n- SQL: %r"%(SQL,category,str(length),str(date),sql_select_f+sql_select_m+sql_select_e))
-    elif debug==9:
-        import os
-        print ("- Running time£º%.4f s"%(time.time()-time_s))
-        path_default=os.path.join(os.path.expanduser("~"), 'Desktop')
-        if not os.path.isdir(path):
-            path = path_default
-        csv_filename="¡¾Êı¾İ×é¡¿["+table.split("_")[-1]+"_"+category+"_Top500"+"]"+variable+"_"+datetime.datetime.strftime(date,"%m%d")+"-"+str(length)+"_"+SQL+".csv"
         try:
             df.to_csv(path+"\\"+csv_filename)
             print("> Êä³öCSVÎÄ¼ş£º",path,",",csv_filename)

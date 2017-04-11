@@ -1,0 +1,28 @@
+    # Order
+    if sort not in [0,1,2]:
+        sort=0
+    if variable=="排名":
+        sort_p = 1
+        fillna_default=501
+    else:
+        sort_p = -1
+        fillna_default=0
+
+    if sort==0:
+        df = df.fillna(fillna)
+        df["sort"]=df["排名"]
+    elif sort==1:
+        import numpy as np
+        # Sorting algorithm:均差排序
+        df = df.fillna(fillna_default)
+        df["sort"]=0
+        for i in range(len(df)):
+            df.ix[i,"sort"]=(np.mean(df.iloc[i,-length:])-np.mean(df.iloc[i,-3:]))/df.ix[i,"排名"]*sort_p
+    elif sort==2:
+        import numpy as np
+        # Sorting algorithm:均差方排序
+        df = df.fillna(fillna_default)
+        df["sort"]=0
+        for i in range(len(df)):
+            df.ix[i,"sort"]=(np.mean(df.iloc[i,-length:])-np.mean(df.iloc[i,-3:]))/df.ix[i,"排名"]**2*sort_p
+    df.sort_values("sort",inplace=True)

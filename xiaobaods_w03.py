@@ -8,4 +8,4 @@ if __name__ == "__main__":
         argv = eval(argv)
     except:
         argv ={}
-fc.xiaobaods_w03(date=argv.get("date",""),category=argv.get("category","牛仔裤"),length=argv.get("length",7),SQL=argv.get("SQL","xiaobaods"),choice=argv.get("choice","热搜核心词"),variable=argv.get("variable","排名"),sort=argv.get("sort",0),fillna=argv.get("fillna",""),debug=argv.get("debug",0),path=argv.get("path",""))
+fc.xiaobaods_w03(date=argv.get("date",""),category=argv.get("category","牛仔裤"),length=argv.get("length",7),SQL=argv.get("SQL","xiaobaods"),choice=argv.get("choice","热搜核心词"),variable=argv.get("variable","排名"),fillna=argv.get("fillna",""),debug=argv.get("debug",0),path=argv.get("path",""))
