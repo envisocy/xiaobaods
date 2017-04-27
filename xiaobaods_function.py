@@ -12,7 +12,7 @@ import sys,os
 def conftodict(filename,path=""):
     # 2017-04-11 添加脚本路径锁定
     if path=="":
-        path = os.path.dirname(__file__)+"\\"
+        path = os.path.dirname(__file__)+"/"
     dic={}
     cp = configparser.SafeConfigParser()
     cp.read(path+filename)
