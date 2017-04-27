@@ -11,6 +11,7 @@ import time
 import sys,os
 def conftodict(filename,path=""):
     # 2017-04-11 添加脚本路径锁定
+    # 2017-04-27 修补BUG，"/"
     if path=="":
         path = os.path.dirname(__file__)+"/"
     dic={}
