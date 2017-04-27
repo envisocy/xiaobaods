@@ -1,5 +1,5 @@
 #!usr/bin/env python3
-#! -*- coding: utf-8 -*-
+#! -*- coding: gbk -*-
 import xiaobaods_function as fc
 if __name__ == "__main__":
     try:
@@ -8,4 +8,5 @@ if __name__ == "__main__":
         argv = eval(argv)
     except:
         argv ={}
-fc.xiaobaods_w(date=argv.get("date",""),category=argv.get("category","ç‰›ä»”è£¤"),length=argv.get("length",7),SQL=argv.get("SQL","xiaobaods"),choice=argv.get("choice","çƒ­æœæ ¸å¿ƒè¯"),variable=argv.get("variable","æ’å"),fillna=argv.get("fillna",""),debug=argv.get("debug",0),path=argv.get("path",""))
+# us function ws
+fc.xiaobaods_ws(df_raw=fc.xiaobaods_w(date=argv.get("date",""),category=argv.get("category","Å£×Ğ¿ã"),length=argv.get("length",7),SQL=argv.get("SQL","xiaobaods"),choice=argv.get("choice","ÈÈËÑºËĞÄ´Ê"),variable=argv.get("variable","ÅÅÃû"),fillna=argv.get("fillna",""),debug=8),df_sort=fc.xiaobaods_w(date=argv.get("date",""),category=argv.get("category","Å£×Ğ¿ã"),length=argv.get("length",7),SQL=argv.get("SQL","xiaobaods"),choice=argv.get("choice","ÈÈËÑºËĞÄ´Ê"),variable="ÅÅÃû",fillna=500,debug=8),algorithm=argv.get("algorithm",0),lbd=argv.get("lbd",0),head=argv.get("head",5),debug=argv.get("debug",""),path=argv.get("path",""))

@@ -11,8 +11,9 @@ import time
 import sys,os
 def conftodict(filename,path=""):
     # 2017-04-11 ÃÌº”Ω≈±æ¬∑æ∂À¯∂®
+    # 2017-04-27 –ﬁ≤πBUG£¨"/"
     if path=="":
-        path = os.path.dirname(__file__)+"\\"
+        path = os.path.dirname(__file__)+"/"
     dic={}
     cp = configparser.SafeConfigParser()
     cp.read(path+filename)
@@ -104,6 +105,7 @@ def xiaobaods_a(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",table="bc_att
 def xiaobaods_w(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",choice="»»À—∫À–ƒ¥ ",variable="≈≈√˚",fillna="",debug=0,path="",keyword="»’∆⁄:"):
     # 2017-04-11 –ﬁ≤πfillnaµƒBUG£¨ÃÌº”keyword“˛≤ÿ≤Œ ˝£∫'»’∆⁄:'
     # 2017-04-12 –ﬁ∏¥ø…ƒ‹“˝∆ ˝æ›ø‚ºÏÀ˜∫œ≤¢÷ÿ∏¥÷µµƒBUG
+    # 2017-04-13 Add dubug=7 Return paramter
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     choice_list = {"»»À—–ﬁ Œ¥ ":{"table":"bc_searchwords_hotwords","variable":("À—À˜»À∆¯","œ‡πÿÀ—À˜¥  ˝","µ„ª˜¬ ","µ„ª˜»À∆¯","÷ß∏∂◊™ªØ¬ ","÷±Õ®≥µ≤Œøºº€")},
@@ -162,6 +164,9 @@ def xiaobaods_w(date="",category="≈£◊–ø„",length=7,SQL="xiaobaods",choice="»»À—∫
     for i in range(length):
         sql_select_m += ",MAX(CASE ST.»’∆⁄ WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `"+keyword+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
     sql_select_e="FROM "+choice_list[choice]["table"]+" AS CT LEFT JOIN "+choice_list[choice]["table"]+" AS ST ON CT.À—À˜¥  = ST.À—À˜¥  WHERE CT.`»’∆⁄` = "+str(date).replace("-","")+" AND CT.¿‡ƒø = '"+category+"' AND CT.◊÷∂Œ='"+choice+"' AND ST.◊÷∂Œ='"+choice+"' AND ST.»’∆⁄ >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.¿‡ƒø = '"+category+"' GROUP BY CT.`≈≈√˚`,CT.`"+variable+"` ORDER BY CT.`≈≈√˚`;"
+    # Return parameter
+    if debug == 7:
+        return {"SQL_choice":SQL,"category":category,"length":str(length),"date":str(date),"SQL":sql_select_f+sql_select_m+sql_select_e,"choice":choice,"table":choice_list[choice]["table"],"variable":variable,"fillna":fillna,"debug":debug,"path":path}    
     # read msg from Mysql
     conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
