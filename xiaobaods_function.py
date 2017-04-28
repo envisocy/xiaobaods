@@ -27,6 +27,7 @@ SQL_msg = conftodict("xiaobaods_SQL.conf")
 def xiaobaods_a(date="",category="牛仔裤",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="热销排名",fillna="",debug=0,path="",keyword="日期:"):
     # 2017-04-11 添加keyword隐藏参数：'日期:'
     # 2017-04-12 修复可能引起数据库检索合并重复值的BUG
+    # 2017-04-28 更新了MySQL检索索引和优化了查询函数，使得检索时间缩短为原来的3%，需对检索结果准确性进行观察认证
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     if category not in ["牛仔裤","打底裤","休闲裤"]:
@@ -71,7 +72,7 @@ def xiaobaods_a(date="",category="牛仔裤",length=7,SQL="xiaobaods",table="bc_att
     sql_select_m=""
     for i in range(length):
         sql_select_m += ",MAX(CASE ST.日期 WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `日期："+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
-    sql_select_e="FROM "+table+" AS CT LEFT JOIN "+table+" AS ST ON SUBSTRING(CT.`宝贝链接` ,- 12) = SUBSTRING(ST.`宝贝链接` ,- 12) WHERE CT.`日期` = "+str(date).replace("-","")+" AND CT.类目 = '"+category+"' AND ST.日期 >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.类目 = '"+category+"' GROUP BY CT.`热销排名`,CT.`"+variable+"` ORDER BY CT.`热销排名`;"
+    sql_select_e="FROM "+table+" AS CT LEFT JOIN "+table+" AS ST ON CT.`宝贝链接` = ST.`宝贝链接` WHERE CT.`日期` = "+str(date).replace("-","")+" AND CT.类目 = '"+category+"' AND ST.日期 >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.类目 = '"+category+"' GROUP BY CT.`热销排名`,CT.`"+variable+"` ORDER BY CT.`热销排名`;"
     # read msg from Mysql
     conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
@@ -210,6 +211,7 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=0,lbd=0,head=5,debug=0,path=""):
     elif head>len(df_raw):
         head = len(df_raw)
     if algorithm in [1,2]:
+
         # EDT. Algorithm
         if lbd < 0.01 or lbd>10:
             lbd = 0.18
@@ -217,6 +219,8 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=0,lbd=0,head=5,debug=0,path=""):
         df_sort['alg'] = lbd*2.718**(-df_sort1[df_sort1.columns[len(df_sort1.columns)-1]]*lbd)*np.std(df_sort1,axis=1)*np.sign(df_sort1.quantile(0.7,axis=1)-df_sort1[df_sort1.columns[len(df_sort1.columns)-1]]+0.001)*np.sign(algorithm*2-3)
         df_sort.sort_values(['alg'],inplace=True)
         df_raw = df_raw.iloc[df_sort.index,:]
+    else:
+        head = len(df_raw)
     # Output
     if debug not in [1,2,8,9]:
         print(df_raw[:head].to_json(orient="index"))
