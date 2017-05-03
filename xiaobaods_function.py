@@ -24,8 +24,8 @@ def conftodict(filename,path=""):
             dic[i][j]=cp.get(i,j)
     return dic
 SQL_msg = conftodict("xiaobaods_SQL.conf")
-def xiaobaods_a(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="ÈÈÏúÅÅÃû",fillna="",debug=0,path="",keyword="ÈÕÆÚ:"):
-    # 2017-04-11 Ìí¼ÓkeywordÒş²Ø²ÎÊı£º'ÈÕÆÚ:'
+def xiaobaods_a(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="ÈÈÏúÅÅÃû",fillna="",debug=0,path="",keyword="ÈÕÆÚ£º"):
+    # 2017-04-11 Ìí¼ÓkeywordÒş²Ø²ÎÊı£º'ÈÕÆÚ£º'
     # 2017-04-12 ĞŞ¸´¿ÉÄÜÒıÆğÊı¾İ¿â¼ìË÷ºÏ²¢ÖØ¸´ÖµµÄBUG
     # 2017-04-28 ¸üĞÂÁËMySQL¼ìË÷Ë÷ÒıºÍÓÅ»¯ÁË²éÑ¯º¯Êı£¬Ê¹µÃ¼ìË÷Ê±¼äËõ¶ÌÎªÔ­À´µÄ3%£¬Ğè¶Ô¼ìË÷½á¹û×¼È·ĞÔ½øĞĞ¹Û²ìÈÏÖ¤
     time_s = time.time()
@@ -87,7 +87,7 @@ def xiaobaods_a(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_att
         return df
     elif debug== 2:
         print ("- Running time£º%.4f s"%(time.time()-time_s))
-        print("- date£º%r \n- category£º%r \n- length£º%r \n- SQL£º%r \n- table: %r \n- variable£º%r \n- debug£º%r \n- path: %r"%(str(date),category,str(length),SQL,table,variable,debug,path))
+        print("- date£º%r \n- category£º%r \n- length£º%r \n- SQL£º%r \n- table: %r \n- variable£º%r \n- debug£º%r \n- path: %r\n- keyword: %r"%(str(date),category,str(length),SQL,table,variable,debug,path,keyword))
     elif debug== 1:
         print ("- Running time£º%.4f s"%(time.time()-time_s))
         print( "  SQL_choice: %r \n- category: %r \n- length: %r \n- date: %r \n- SQL: %r"%(SQL,category,str(length),str(date),sql_select_f+sql_select_m+sql_select_e))
@@ -103,7 +103,7 @@ def xiaobaods_a(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",table="bc_att
             print("> Êä³öCSVÎÄ¼ş£º",path,",",csv_filename)
         except Exception as e:
             print("> Êä³öCSVÎÄ¼şÊ§°Ü£¬´íÎóÔ­Òò£º",e)
-def xiaobaods_w(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑºËĞÄ´Ê",variable="ÅÅÃû",fillna="",debug=0,path="",keyword="ÈÕÆÚ:"):
+def xiaobaods_w(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑºËĞÄ´Ê",variable="ÅÅÃû",fillna="",debug=0,path="",keyword="ÈÕÆÚ£º"):
     # 2017-04-11 ĞŞ²¹fillnaµÄBUG£¬Ìí¼ÓkeywordÒş²Ø²ÎÊı£º'ÈÕÆÚ:'
     # 2017-04-12 ĞŞ¸´¿ÉÄÜÒıÆğÊı¾İ¿â¼ìË÷ºÏ²¢ÖØ¸´ÖµµÄBUG
     # 2017-04-13 Add dubug=7 Return paramter
@@ -184,7 +184,7 @@ def xiaobaods_w(date="",category="Å£×Ğ¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
         print( "  SQL_choice: %r \n- category: %r \n- length: %r \n- date: %r \n- SQL: %r"%(SQL,category,str(length),str(date),sql_select_f+sql_select_m+sql_select_e))
     elif debug== 2:
         print ("- Running time£º%.4f s"%(time.time()-time_s))
-        print("- date£º%r \n- category£º%r \n- length£º%r \n- SQL£º%r \n- choice: %r \n- table: %r \n- variable£º%r \n- fillna: %r \n- debug£º%r \n- path: %r"%(str(date),category,str(length),SQL,choice,choice_list[choice]["table"],variable,fillna,debug,path))
+        print("- date£º%r \n- category£º%r \n- length£º%r \n- SQL£º%r \n- choice: %r \n- table: %r \n- variable£º%r \n- fillna: %r \n- debug£º%r \n- path: %r\n- keyword: %r"%(str(date),category,str(length),SQL,choice,choice_list[choice]["table"],variable,fillna,debug,path,keyword))
     elif debug== 8:
         return df
     elif debug== 9:
