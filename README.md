@@ -9,6 +9,7 @@
 	- ver_10 04-14 修补重排BUG，整体代码优化，加入ws EDT排序
     - ver_11 04-27 修补服务器BUG
     - ver_12 04-28 使用索引技术优化MySQL读取性能，并对SQL语句逻辑进行优化，针对conf文件进行优化调整
+    - ver_13 05-11 添加xiaobaods_c.py函数
 
 ### a
 三大类搜索数据的历史数据（排名）组合表
@@ -46,3 +47,9 @@ version:
     - ver_12 将w剥离为不同功能的w和ws，分开维护，优化SQL语句逻辑。
 - ws:2017-04-28
     - ver_12 两次调用debug=2返回值和一次variable=排序进行针对"排序"的排序，通过head参数调整输出长度
+
+### c
+属性搜索数据历史数据（排名）组合表
+> from:"bc_category_granularity"
+version:
+    - ver_13 根据a添加classification和attributes参数，删除table参数，并对数据采集没有“查看详情”变量进行调整

@@ -241,3 +241,77 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=0,lbd=0,head=5,debug=0,path=""):
             print("> 输出CSV文件：",path,",",csv_filename)
         except Exception as e:
             print("> 输出CSV文件失败，错误原因：",e)
+def xiaobaods_c(date="",category="牛仔裤",classification="款式",attributes="铅笔裤",length=7,SQL="xiaobaods",variable="热销排名",fillna="",debug=0,path="",keyword="日期："):
+    # 2017-05-11 针对属性的查询模块
+    time_s = time.time()
+    latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
+    goal = {"打底裤":{"厚薄":['薄款','常规','加绒','加厚'],"裤长":['长裤','短裤','七分裤/九分裤']},"牛仔裤":{"款式":['哈伦裤','阔脚裤','铅笔裤','连衣裤','背带裤','直筒','灯笼裤','微喇裤','工装裤','垮裤'],"裤长":['长裤','超短裤','短裤','五分裤','九分裤','七分裤'],"腰型":['高腰','低腰','中腰'],"厚薄":['超薄','薄款','常规','加厚']}}
+    if (category not in goal) or (classification not in goal[category]) or (attributes not in goal[category][classification]):
+        category = "牛仔裤"
+        classification="款式"
+        attributes="铅笔裤"
+    if length>14 or length<3:
+        length=7
+    if SQL not in SQL_msg:
+        SQL=SQL_msg[0]
+    table="bc_category_granularity"
+    if date=="":
+        date = latest_date
+    else:
+        date=parse(date).date()  # 修改日期格式
+    if variable not in ["热销排名","支付子订单数","支付件数","支付转化率指数"]:
+        variable="热销排名"
+    # Try to connect with the mysql and back a date which minimum.
+    try:
+        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+        cursor = conn.cursor()
+        cursor.execute("SELECT min(`日期`),max(`日期`) from "+table+" where `类目`='"+category+"' and `类型`='"+classification+"' and `属性`='"+attributes+"';")
+        date_limit = cursor.fetchall()
+        date_floor = date_limit[0][0]
+        date_ceiling = date_limit[0][1] 
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        return e
+    if date > latest_date:
+        date = latest_date
+    if date > date_ceiling:
+        date = date_ceiling
+    if date < date_floor + datetime.timedelta(length-1):
+        date = date_floor + datetime.timedelta(length-1)
+    # Main program.
+    sql_select_f = "SELECT CT.`主图缩略图`,CT.`热销排名`,CT.`商品信息`,CT.`所属店铺`,CT.`支付子订单数`,CT.`支付件数`,CT.`支付转化率指数`,CT.`宝贝链接`,CT.`店铺链接`,CT.`查看详情`"
+    sql_select_m=""
+    for i in range(length):
+        sql_select_m += ",MAX(CASE ST.日期 WHEN "+str(date - datetime.timedelta(length-i-1)).replace("-","")+" THEN ST."+variable+" ELSE NULL END) AS `日期："+str(date - datetime.timedelta(length-i-1)).replace("-","")+"` "
+    sql_select_e="FROM "+table+" AS CT LEFT JOIN "+table+" AS ST ON CT.`宝贝链接` = ST.`宝贝链接` WHERE CT.`日期` = "+str(date).replace("-","")+" AND CT.类目 = '"+category+"' AND CT.类型 = '"+classification+"' AND CT.属性 = '"+attributes+"' AND ST.日期 >= "+str(date - datetime.timedelta(length)).replace("-","")+" AND ST.类目 = '"+category+"' AND CT.类型 = '"+classification+"' AND CT.属性 = '"+attributes+"' GROUP BY CT.`热销排名`,CT.`"+variable+"` ORDER BY CT.`热销排名`;"
+    # read msg from Mysql
+    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+    df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
+    conn.close()
+    if fillna != "drop":
+        df = df.fillna(fillna)
+    else:
+        df.dropna(inplace=True)
+    if debug not in [1,2,8,9]:
+        print(df.to_json(orient="index"))
+    elif debug== 8:
+        return df
+    elif debug== 2:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print("- date：%r \n- category： %r\n- classification： %r\n- attributes：%r \n- length：%r \n- SQL：%r \n- table: %r \n- variable：%r \n- debug：%r \n- path: %r\n- keyword: %r"%(str(date),category,classification,attributes,str(length),SQL,table,variable,debug,path,keyword))
+    elif debug== 1:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print( "  SQL_choice: %r \n- category: %r \n- length: %r \n- date: %r \n- SQL: %r"%(SQL,category,str(length),str(date),sql_select_f+sql_select_m+sql_select_e))
+    elif debug==9:
+        import os
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        path_default=os.path.join(os.path.expanduser("~"), 'Desktop')
+        if not os.path.isdir(path):
+            path = path_default
+        csv_filename="【数据组】["+table.split("_")[1]+"_"+category+"_"+classification+"_"+attributes+"]"+variable+"_"+datetime.datetime.strftime(date,"%m%d")+"-"+str(length)+"_"+SQL+".csv"
+        try:
+            df.to_csv(path+"\\"+csv_filename)
+            print("> 输出CSV文件：",path,",",csv_filename)
+        except Exception as e:
+            print("> 输出CSV文件失败，错误原因：",e)
