@@ -10,11 +10,13 @@
     - ver_11 04-27 修补服务器BUG
     - ver_12 04-28 使用索引技术优化MySQL读取性能，并对SQL语句逻辑进行优化，针对conf文件进行优化调整
     - ver_13 05-11 添加xiaobaods_c.py函数
-
+    - ver_14 05-15 添加'storegroup.txt'的店铺组信息读取，并添加a/c的storechoice和storegroupchoice参数,对结果进行筛选。
+    - ver_15 05-15 storechoice排斥storegroupchoice优先，且针对天猫店铺后缀一定程度容错
+    
 ### a
 三大类搜索数据的历史数据（排名）组合表
 > from:"bc_attribute_granularity_sales","bc_attribute_granularity_visitor"
-version:
+##### version:
 - 01:2017-03-17 
 	- ver_01 基础内容更新
 	- ver_05 停用，并计划未来更新删除
@@ -28,11 +30,13 @@ version:
 	- ver_08 加入含debug参数后返回运行时间反馈
     - ver_11 统一命名为a
 	- ver_12 大量修改SQL查询逻辑
+    - ver_14 storechoice > storegroup choice参数,对结果进行筛选
+    - ver_15 后缀一定程度容错
 
 ### w
 搜索热词的历史数据（排名）组合表
 > from:"bc_searchwords_hotwords","bc_searchwords_risewords"
-version:
+##### version:
 - 01:2017-03-15
 	- ver_02 根据代号a的开发，进行基础框架开发
 	- ver_03 实现a_02绝大部分可实现功能
@@ -51,5 +55,7 @@ version:
 ### c
 属性搜索数据历史数据（排名）组合表
 > from:"bc_category_granularity"
-version:
+##### version:
     - ver_13 根据a添加classification和attributes参数，删除table参数，并对数据采集没有“查看详情”变量进行调整
+    - ver_14 storechoice > storegroup choice参数,对结果进行筛选
+    - ver_15 后缀一定程度容错
