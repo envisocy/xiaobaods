@@ -199,7 +199,7 @@ def xiaobaods_w(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
             print("> Êä³öCSVÎÄ¼þ£º",path,",",csv_filename)
         except Exception as e:
             print("> Êä³öCSVÎÄ¼þÊ§°Ü£¬´íÎóÔ­Òò£º",e)
-def xiaobaods_ws(df_raw,df_sort,algorithm=0,lbd=0,head=5,debug=0,path=""):
+def xiaobaods_ws(df_raw,df_sort,algorithm=1,lbd=0,head=5,debug=0,path=""):
     # 2017-04-12 Algorithm EDT.
     # Algorithm Choice
     if len(df_raw) > len(df_sort):
