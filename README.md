@@ -56,6 +56,7 @@
 属性搜索数据历史数据（排名）组合表
 > from:"bc_category_granularity"
 ##### version:
+- c:2017-05-11
     - ver_13 根据a添加classification和attributes参数，删除table参数，并对数据采集没有“查看详情”变量进行调整
     - ver_14 storechoice > storegroup choice参数,对结果进行筛选
     - ver_15 后缀一定程度容错
