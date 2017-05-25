@@ -12,6 +12,7 @@
     - ver_13 05-11 添加xiaobaods_c.py函数
     - ver_14 05-15 添加'storegroup.txt'的店铺组信息读取，并添加a/c的storechoice和storegroupchoice参数,对结果进行筛选。
     - ver_15 05-15 storechoice排斥storegroupchoice优先，且针对天猫店铺后缀一定程度容错
+    - ver_16 05-25 针对线上txt编码问题重新写入txt读取模块，引入包codecs
     
 ### a
 三大类搜索数据的历史数据（排名）组合表

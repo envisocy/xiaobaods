@@ -9,6 +9,7 @@ import pandas as pd
 import configparser
 import time
 import sys,os
+import codecs
 # SQL msg
 def conftodict(filename,path=""):
     #! -*- coding: utf8 -*-
@@ -29,10 +30,10 @@ SQL_msg = conftodict("xiaobaods_SQL.conf")
 # Store Group
 storegroup = {}
 try:
-    f = open('storegroup.txt')
-    storegrouptxt = f.read()
-    for i in range(len(storegrouptxt.split("\n"))):
-        storegroup[storegrouptxt.split("\n")[i].split(":")[0]]=storegrouptxt.split("\n")[i].split(":")[1].split(",")
+    f = codecs.open('storegroup.txt','r','utf-8')
+    storegrouptxt = f.readlines()
+    for i in range(1,len(storegrouptxt)): # 第一行为编码行，略去
+        storegroup[storegrouptxt[i].split(":")[0]]=storegrouptxt[i].split(":")[1].split("\r\n")[0].split(",")
     f.close()
 except:
     pass
