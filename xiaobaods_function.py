@@ -241,7 +241,7 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=1,lbd=0,head=5,debug=0,path=""):
     if algorithm in [1,2]:
         # EDT. Algorithm
         if lbd < 0.01 or lbd>10:
-            lbd = 0.18
+            lbd = 0.12
         df_sort1 = df_sort.ix[:,8:]
         df_sort['alg'] = lbd*2.718**(-df_sort1[df_sort1.columns[len(df_sort1.columns)-1]]*lbd)*np.std(df_sort1,axis=1)*np.sign(df_sort1.quantile(0.7,axis=1)-df_sort1[df_sort1.columns[len(df_sort1.columns)-1]]+0.001)*np.sign(algorithm*2-3)
         df_sort.sort_values(['alg'],inplace=True)
@@ -351,3 +351,66 @@ def xiaobaods_c(date="",category="牛仔裤",classification="款式",attributes="铅笔
             print("> 输出CSV文件：",path,",",csv_filename)
         except Exception as e:
             print("> 输出CSV文件失败，错误原因：",e)
+def xiaobaods_m(date="",SQL="xiaobaods",category="牛仔裤",display="year",vs="onyear",variable="all",debug=0,path=""):
+    '''
+    date default=''
+    category default='牛仔裤','打底裤','休闲裤'
+    display default='year','month','quarter','halfyear'
+    vs default='onyear','sameperiod'
+    variable default='all',element in columns
+    debug default=0,1,2,8,9
+    path default=""
+    '''
+    table = 'bc_industry_market'
+    time_s = time.time()
+    latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
+    if SQL not in SQL_msg:
+        SQL=SQL_msg[0]
+    if date =='':
+        date = latest_date
+    else:
+        date=parse(date).date()  # 修改日期格式
+    if category not in ['牛仔裤','打底裤','休闲裤']:
+        category = '牛仔裤'
+    if display not in ['year','month','quarter','halfyear']:
+        display = 'year'
+    if vs not in ['onyear','sameperiod']:
+        vs = 'onyear'
+    if variable not in ['all','访客数','收藏人数','收藏次数','浏览量','搜索点击率','搜索点击人数','加购次数','加购人数','客单价','浏览商品数','被浏览卖家数','卖家数','被支付卖家数','搜索人气','支付件数','交易指数','支付金额较父类目占比']:
+        variable = 'all'
+    display_time = {'year':365,'month':30,'quarter':90,'halfyear':180}
+    if vs == 'onyear':
+        cost_time = display_time[display]+365
+    elif vs == 'sameperiod':
+        cost_time = display_time[display]*2
+    date_edge = date - datetime.timedelta(cost_time)  # 最小时间边界
+    # Try to connect with the mysql and back a date which minimum.
+    try:
+        conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+        cursor = conn.cursor()
+        cursor.execute("SELECT min(`日期`),max(`日期`) from "+table+" where `类目`='"+category+"';")
+        date_limit = cursor.fetchall()
+        date_floor = date_limit[0][0]
+        date_ceiling = date_limit[0][1]
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        return e
+    if date > latest_date:
+        date = latest_date
+    if date > date_ceiling:
+        date = date_ceiling
+    if date_edge < date_floor:
+        date = date_floor + datetime.timedelta(cost_time)
+    # Main program.
+    sql_select_1 = "SELECT * FROM "+table+" WHERE `类目`='"+ category +"' AND `日期` <='"+str(date)+"' AND `日期` >='"+ str(date-datetime.timedelta(display_time[display]-1))+"';"
+    sql_select_0 = "SELECT * FROM "+table+" WHERE `类目`='"+ category +"' AND `日期` <='"+str(date - datetime.timedelta(cost_time) + datetime.timedelta(display_time[display]))+"' AND `日期` >='"+ str(date - datetime.timedelta(cost_time-1))+"';"
+    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
+    df1 = pd.io.sql.read_sql_query(sql_select_1,conn)
+    df0 = pd.io.sql.read_sql_query(sql_select_0,conn)
+    conn.close()
+    if debug != [1,2,8,9]:
+        print (df1.to_json(orient="index"),df0.to_json(orient="index"))
+    elif debug== 2:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print("- date：/%r/%r/ %r (%r ~[%r]~ %r) \n- times：[ %r ~ %r ] * [ %r ~ %r ] \n- category： %r\n- display： %r\n- vs：%r \n- variable：%r \n- SQL-1：%r \n- SQL-0：%r \n- table：%r \n- debug：%r \n- path: %r"%(str(date_edge),cost_time,str(date),str(date_floor),str(latest_date),str(date_ceiling),str(date - datetime.timedelta(cost_time-1)),str(date - datetime.timedelta(cost_time) + datetime.timedelta(display_time[display])),str(date-datetime.timedelta(display_time[display]-1)),str(date),category,display,vs,variable,sql_select_1,sql_select_0,table,debug,path))
