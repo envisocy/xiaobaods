@@ -13,6 +13,7 @@
     - ver_14 05-15 添加'storegroup.txt'的店铺组信息读取，并添加a/c的storechoice和storegroupchoice参数,对结果进行筛选。
     - ver_15 05-15 storechoice排斥storegroupchoice优先，且针对天猫店铺后缀一定程度容错
     - ver_16 05-25 针对线上txt编码问题重新写入txt读取模块，引入包codecs
+    - ver_17 06-02 添加针对Panel的xiaobaods_m文档
     
 ### a
 三大类搜索数据的历史数据（排名）组合表
@@ -61,3 +62,10 @@
     - ver_13 根据a添加classification和attributes参数，删除table参数，并对数据采集没有“查看详情”变量进行调整
     - ver_14 storechoice > storegroup choice参数,对结果进行筛选
     - ver_15 后缀一定程度容错
+
+### m
+Panel中的类目同比/环比数据对比
+> from:"bc_industry_market"
+##### version:
+- m:2017-06-02
+    - ver_17 新参数display和vs同步输出df1和df0两张数据表单

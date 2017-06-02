@@ -353,6 +353,7 @@ def xiaobaods_c(date="",category="牛仔裤",classification="款式",attributes="铅笔
             print("> 输出CSV文件失败，错误原因：",e)
 def xiaobaods_m(date="",SQL="xiaobaods",category="牛仔裤",display="year",vs="onyear",variable="all",debug=0,path=""):
     '''
+    # 2017-06-02 针对Panel的展示图形
     date default=''
     category default='牛仔裤','打底裤','休闲裤'
     display default='year','month','quarter','halfyear'
@@ -409,8 +410,25 @@ def xiaobaods_m(date="",SQL="xiaobaods",category="牛仔裤",display="year",vs="ony
     df1 = pd.io.sql.read_sql_query(sql_select_1,conn)
     df0 = pd.io.sql.read_sql_query(sql_select_0,conn)
     conn.close()
-    if debug != [1,2,8,9]:
+    if debug not in [1,2,8,9]:
         print (df1.to_json(orient="index"),df0.to_json(orient="index"))
-    elif debug== 2:
+    elif debug == 1:
         print ("- Running time：%.4f s"%(time.time()-time_s))
-        print("- date：/%r/%r/ %r (%r ~[%r]~ %r) \n- times：[ %r ~ %r ] * [ %r ~ %r ] \n- category： %r\n- display： %r\n- vs：%r \n- variable：%r \n- SQL-1：%r \n- SQL-0：%r \n- table：%r \n- debug：%r \n- path: %r"%(str(date_edge),cost_time,str(date),str(date_floor),str(latest_date),str(date_ceiling),str(date - datetime.timedelta(cost_time-1)),str(date - datetime.timedelta(cost_time) + datetime.timedelta(display_time[display])),str(date-datetime.timedelta(display_time[display]-1)),str(date),category,display,vs,variable,sql_select_1,sql_select_0,table,debug,path))
+        print( "  SQL_choice: %r \n- category: %r \n- date: %r \n- SQL_1: %r\n- SQL_0: %r"%(SQL,category,str(date),sql_select_1,sql_select_0))
+    elif debug == 2:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print("- date：/%r/%r/ %r (%r ~[%r]~ %r) \n- times：[ %r ~ %r ] * [ %r ~ %r ] \n- category： %r\n- display： %r\n- vs：%r \n- variable：%r \n- table：%r \n- debug：%r \n- path: %r"%(str(date_edge),cost_time,str(date),str(date_floor),str(latest_date),str(date_ceiling),str(date - datetime.timedelta(cost_time-1)),str(date - datetime.timedelta(cost_time) + datetime.timedelta(display_time[display])),str(date-datetime.timedelta(display_time[display]-1)),str(date),category,display,vs,variable,table,debug,path))
+    elif debug == 8:
+        return df1,df0
+    elif debug == 9:
+        import os
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        path_default=os.path.join(os.path.expanduser("~"), 'Desktop')
+        if not os.path.isdir(path):
+            path = path_default
+        csv_filename="【数据组】["+table+"_"+category+"_"+datetime.datetime.strftime(date,"%m%d")+"-"+display+"_"+vs+".csv"
+        try:
+            pd.concat([df1,df0]).to_csv(path+"\\"+csv_filename)
+            print("> 输出CSV文件：",path,",",csv_filename)
+        except Exception as e:
+            print("> 输出CSV文件失败，错误原因：",e)        
