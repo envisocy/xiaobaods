@@ -48,6 +48,7 @@ def xiaobaods_a(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",table="bc_att
     # 2017-04-12 ÐÞ¸´¿ÉÄÜÒýÆðÊý¾Ý¿â¼ìË÷ºÏ²¢ÖØ¸´ÖµµÄBUG
     # 2017-04-28 ¸üÐÂÁËMySQL¼ìË÷Ë÷ÒýºÍÓÅ»¯ÁË²éÑ¯º¯Êý£¬Ê¹µÃ¼ìË÷Ê±¼äËõ¶ÌÎªÔ­À´µÄ3%£¬Ðè¶Ô¼ìË÷½á¹û×¼È·ÐÔ½øÐÐ¹Û²ìÈÏÖ¤
     # 2017-05-15 storechoice > storegroup choice²ÎÊý,¶Ô½á¹û½øÐÐÉ¸Ñ¡£¬ºó×ºÈÝ´í
+    # 2017-06-03 fillna¸üÐÂ£¬Ìí¼Óbd
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     if category not in ["Å£×Ð¿ã","´òµ×¿ã","ÐÝÏÐ¿ã"]:
@@ -105,10 +106,15 @@ def xiaobaods_a(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",table="bc_att
         df = df[df["ËùÊôµêÆÌ"].isin(storechoice)]
     elif storegroupchoice != "":
         df = df[df["ËùÊôµêÆÌ"].isin(storegroup[storegroupchoice])]
-    if fillna != "drop":
-        df = df.fillna(fillna)
-    else:
+    if fillna == "bd":
+        df = df.fillna(method="bfill",limit=1,axis=1)
         df.dropna(inplace=True)
+    elif fillna == "drop":
+        df.dropna(inplace=True)
+    elif fillna =="":
+        pass
+    else:
+        df = df.fillna(fillna)
     if debug not in [1,2,8,9]:
         print(df.to_json(orient="index"))
     elif debug== 8:
@@ -135,6 +141,7 @@ def xiaobaods_w(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
     # 2017-04-11 ÐÞ²¹fillnaµÄBUG£¬Ìí¼ÓkeywordÒþ²Ø²ÎÊý£º'ÈÕÆÚ:'
     # 2017-04-12 ÐÞ¸´¿ÉÄÜÒýÆðÊý¾Ý¿â¼ìË÷ºÏ²¢ÖØ¸´ÖµµÄBUG
     # 2017-04-13 Add dubug=7 Return paramter
+    # 2017-06-03 fillna¸üÐÂ£¬Ìí¼Óbd
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     choice_list = {"ÈÈËÑÐÞÊÎ´Ê":{"table":"bc_searchwords_hotwords","variable":("ËÑË÷ÈËÆø","Ïà¹ØËÑË÷´ÊÊý","µã»÷ÂÊ","µã»÷ÈËÆø","Ö§¸¶×ª»¯ÂÊ","Ö±Í¨³µ²Î¿¼¼Û")},
@@ -200,10 +207,15 @@ def xiaobaods_w(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
     conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
     conn.close()
-    if fillna != "drop":
-        df = df.fillna(fillna)
-    else:
+    if fillna == "bd":
+        df = df.fillna(method="bfill",limit=1,axis=1)
         df.dropna(inplace=True)
+    elif fillna == "drop":
+        df.dropna(inplace=True)
+    elif fillna =="":
+        pass
+    else:
+        df = df.fillna(fillna)
     # Debug
     if debug not in [1,2,8,9]:
         print(df.to_json(orient="index"))
@@ -271,6 +283,7 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=1,lbd=0,head=5,debug=0,path=""):
 def xiaobaods_c(date="",category="Å£×Ð¿ã",classification="¿îÊ½",attributes="Ç¦±Ê¿ã",length=7,SQL="xiaobaods",variable="ÈÈÏúÅÅÃû",fillna="",debug=0,path="",keyword="ÈÕÆÚ£º",storechoice="",storegroupchoice=""):
     # 2017-05-11 Õë¶ÔÊôÐÔµÄ²éÑ¯Ä£¿é
     # 2017-05-15 storechoice > storegroup choice²ÎÊý,¶Ô½á¹û½øÐÐÉ¸Ñ¡£¬ºó×ºÈÝ´í
+    # 2017-06-03 fillna¸üÐÂ£¬Ìí¼Óbd
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     goal = {"´òµ×¿ã":{"ºñ±¡":['±¡¿î','³£¹æ','¼ÓÈÞ','¼Óºñ'],"¿ã³¤":['³¤¿ã','¶Ì¿ã','Æß·Ö¿ã/¾Å·Ö¿ã']},"Å£×Ð¿ã":{"¿îÊ½":['¹þÂ×¿ã','À«½Å¿ã','Ç¦±Ê¿ã','Á¬ÒÂ¿ã','±³´ø¿ã','Ö±Í²','µÆÁý¿ã','Î¢À®¿ã','¹¤×°¿ã','¿å¿ã'],"¿ã³¤":['³¤¿ã','³¬¶Ì¿ã','¶Ì¿ã','Îå·Ö¿ã','¾Å·Ö¿ã','Æß·Ö¿ã'],"ÑüÐÍ":['¸ßÑü','µÍÑü','ÖÐÑü'],"ºñ±¡":['³¬±¡','±¡¿î','³£¹æ','¼Óºñ']}}
@@ -325,10 +338,15 @@ def xiaobaods_c(date="",category="Å£×Ð¿ã",classification="¿îÊ½",attributes="Ç¦±Ê
         df = df[df["ËùÊôµêÆÌ"].isin(storechoice)]
     elif storegroupchoice != "":
         df = df[df["ËùÊôµêÆÌ"].isin(storegroup[storegroupchoice])]
-    if fillna != "drop":
-        df = df.fillna(fillna)
-    else:
+    if fillna == "bd":
+        df = df.fillna(method="bfill",limit=1,axis=1)
         df.dropna(inplace=True)
+    elif fillna == "drop":
+        df.dropna(inplace=True)
+    elif fillna =="":
+        pass
+    else:
+        df = df.fillna(fillna)
     if debug not in [1,2,8,9]:
         print(df.to_json(orient="index"))
     elif debug== 8:
@@ -410,8 +428,9 @@ def xiaobaods_m(date="",SQL="xiaobaods",category="Å£×Ð¿ã",display="year",vs="ony
     df1 = pd.io.sql.read_sql_query(sql_select_1,conn)
     df0 = pd.io.sql.read_sql_query(sql_select_0,conn)
     conn.close()
+    df = pd.merge(df1,df0.iloc[:,1:],left_index = True,right_index=True,suffixes=("_1","_0"))
     if debug not in [1,2,8,9]:
-        print (df1.to_json(orient="index"),df0.to_json(orient="index"))
+        print (df.to_json(orient="index"))
     elif debug == 1:
         print ("- Running time£º%.4f s"%(time.time()-time_s))
         print( "  SQL_choice: %r \n- category: %r \n- date: %r \n- SQL_1: %r\n- SQL_0: %r"%(SQL,category,str(date),sql_select_1,sql_select_0))
@@ -419,7 +438,7 @@ def xiaobaods_m(date="",SQL="xiaobaods",category="Å£×Ð¿ã",display="year",vs="ony
         print ("- Running time£º%.4f s"%(time.time()-time_s))
         print("- date£º/%r/%r/ %r (%r ~[%r]~ %r) \n- times£º[ %r ~ %r ] * [ %r ~ %r ] \n- category£º %r\n- display£º %r\n- vs£º%r \n- variable£º%r \n- table£º%r \n- debug£º%r \n- path: %r"%(str(date_edge),cost_time,str(date),str(date_floor),str(latest_date),str(date_ceiling),str(date - datetime.timedelta(cost_time-1)),str(date - datetime.timedelta(cost_time) + datetime.timedelta(display_time[display])),str(date-datetime.timedelta(display_time[display]-1)),str(date),category,display,vs,variable,table,debug,path))
     elif debug == 8:
-        return df1,df0
+        return df
     elif debug == 9:
         import os
         print ("- Running time£º%.4f s"%(time.time()-time_s))
@@ -428,7 +447,7 @@ def xiaobaods_m(date="",SQL="xiaobaods",category="Å£×Ð¿ã",display="year",vs="ony
             path = path_default
         csv_filename="¡¾Êý¾Ý×é¡¿["+table+"_"+category+"_"+datetime.datetime.strftime(date,"%m%d")+"-"+display+"_"+vs+".csv"
         try:
-            pd.concat([df1,df0]).to_csv(path+"\\"+csv_filename)
+            df.to_csv(path+"\\"+csv_filename)
             print("> Êä³öCSVÎÄ¼þ£º",path,",",csv_filename)
         except Exception as e:
             print("> Êä³öCSVÎÄ¼þÊ§°Ü£¬´íÎóÔ­Òò£º",e)        

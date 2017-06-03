@@ -1,3 +1,6 @@
+# Xiaobaods 后台程序说明文档
+> :: 宝儿电商 数据组 ::
+
 ### fc
 - 01:2017-04-10
 	- ver_03 03-20 对文件结构进行了调整，建立主函数程序
@@ -14,6 +17,7 @@
     - ver_15 05-15 storechoice排斥storegroupchoice优先，且针对天猫店铺后缀一定程度容错
     - ver_16 05-25 针对线上txt编码问题重新写入txt读取模块，引入包codecs
     - ver_17 06-02 添加针对Panel的xiaobaods_m文档
+    - ver_18 06-03 更新m，并优化fillna参数:添加bd(自动填充空值为行后方值，只能填充一次，并删除所有处理后的含空行)
     
 ### a
 三大类搜索数据的历史数据（排名）组合表
@@ -33,7 +37,8 @@
     - ver_11 统一命名为a
 	- ver_12 大量修改SQL查询逻辑
     - ver_14 storechoice > storegroup choice参数,对结果进行筛选
-    - ver_15 后缀一定程度容错
+    - ver_15 后缀一定程度容错（对“旗舰店”、“女装旗舰店”、“专营店”等）
+    - ver_18 更新fillna
 
 ### w
 搜索热词的历史数据（排名）组合表
@@ -53,6 +58,7 @@
     - ver_12 将w剥离为不同功能的w和ws，分开维护，优化SQL语句逻辑。
 - ws:2017-04-28
     - ver_12 两次调用debug=2返回值和一次variable=排序进行针对"排序"的排序，通过head参数调整输出长度
+    - ver_18 更新fillna
 
 ### c
 属性搜索数据历史数据（排名）组合表
@@ -62,6 +68,7 @@
     - ver_13 根据a添加classification和attributes参数，删除table参数，并对数据采集没有“查看详情”变量进行调整
     - ver_14 storechoice > storegroup choice参数,对结果进行筛选
     - ver_15 后缀一定程度容错
+    - ver_18 更新fillna
 
 ### m
 Panel中的类目同比/环比数据对比
@@ -69,3 +76,4 @@ Panel中的类目同比/环比数据对比
 ##### version:
 - m:2017-06-02
     - ver_17 新参数display和vs同步输出df1和df0两张数据表单
+    - ver_18 更新产生df表针对df1和df0的组合方式
