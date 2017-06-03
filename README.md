@@ -16,8 +16,9 @@
     - ver_14 05-15 添加'storegroup.txt'的店铺组信息读取，并添加a/c的storechoice和storegroupchoice参数,对结果进行筛选。
     - ver_15 05-15 storechoice排斥storegroupchoice优先，且针对天猫店铺后缀一定程度容错
     - ver_16 05-25 针对线上txt编码问题重新写入txt读取模块，引入包codecs
-    - ver_17 06-02 添加针对Panel的xiaobaods_m文档
-    - ver_18 06-03 更新m，并优化fillna参数:添加bd(自动填充空值为行后方值，只能填充一次，并删除所有处理后的含空行)
+    - ver_17 05-27 添加针对Panel的xiaobaods_m文档
+    - ver_18 06-01 更新m，并优化fillna参数:添加bd(自动填充空值为行后方值，只能填充一次，并删除所有处理后的含空行)
+    - ver_19 06-03 重做_ws，舍弃之前的LR算法，改为Log算法
     
 ### a
 三大类搜索数据的历史数据（排名）组合表
@@ -56,9 +57,10 @@
 	- ver_10 统一为最新编译，修复重排BUG，加入对应ws EDT排序整合
     - ver_11 统一命名为w
     - ver_12 将w剥离为不同功能的w和ws，分开维护，优化SQL语句逻辑。
-- ws:2017-04-28
-    - ver_12 两次调用debug=2返回值和一次variable=排序进行针对"排序"的排序，通过head参数调整输出长度
     - ver_18 更新fillna
+- ws:2017-04-28(Alg)
+    - ver_12 两次调用debug=2返回值和一次variable=排序进行针对"排序"的排序，通过head参数调整输出长度
+    - ver_19 重做_ws，舍弃之前的LR算法，改为Log算法
 
 ### c
 属性搜索数据历史数据（排名）组合表

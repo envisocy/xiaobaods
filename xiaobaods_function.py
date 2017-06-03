@@ -239,9 +239,9 @@ def xiaobaods_w(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
             print("> Êä³öCSVÎÄ¼þ£º",path,",",csv_filename)
         except Exception as e:
             print("> Êä³öCSVÎÄ¼þÊ§°Ü£¬´íÎóÔ­Òò£º",e)
-def xiaobaods_ws(df_raw,df_sort,algorithm=1,lbd=0,head=5,debug=0,path=""):
-    # 2017-04-12 Algorithm EDT.
-    # Algorithm Choice
+def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha="",head=5,debug=0,path=""):
+    # 2017-04-12 Algorithm EDT(Removed 06-03).
+    # 2017-06-03 Rewrite Algorithm Log.
     if len(df_raw) > len(df_sort):
         df_raw = df_raw.ix[:len(df_sort),:]
     elif len(df_raw) < len(df_sort):
@@ -251,23 +251,31 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=1,lbd=0,head=5,debug=0,path=""):
     elif head>len(df_raw):
         head = len(df_raw)
     if algorithm in [1,2]:
-        # EDT. Algorithm
-        if lbd < 0.01 or lbd>10:
-            lbd = 0.12
-        df_sort1 = df_sort.ix[:,8:]
-        df_sort['alg'] = lbd*2.718**(-df_sort1[df_sort1.columns[len(df_sort1.columns)-1]]*lbd)*np.std(df_sort1,axis=1)*np.sign(df_sort1.quantile(0.7,axis=1)-df_sort1[df_sort1.columns[len(df_sort1.columns)-1]]+0.001)*np.sign(algorithm*2-3)
+        # Log. Algorithm
+        if alpha not in [2,"2","e",10,"10","1p"]:
+            alpha = "10"
+        def xlog(x):
+            if alpha ==2 or alpha =="2":
+                return np.log2(x)
+            elif alpha=="e":
+                return np.log(x)
+            elif alpha=="1p":
+                return np.log1p(x)
+            else: # 10 or "10"
+                return np.log10(x)
+        df_sort['alg'] = (xlog(df_sort.iloc[:,12].tolist())+xlog(df_sort.iloc[:,13].tolist())+xlog(df_sort.iloc[:,14].tolist()))/3-(xlog(df_sort.iloc[:,8].tolist())+xlog(df_sort.iloc[:,9].tolist())+xlog(df_sort.iloc[:,10].tolist())+xlog(df_sort.iloc[:,11].tolist()))/4
         df_sort.sort_values(['alg'],inplace=True)
-        df_raw = df_raw.iloc[df_sort.index,:]
+        df_raw = df_raw.loc[df_sort.index,:]
     else:
         head = len(df_raw)
     # Output
     if debug not in [1,2,8,9]:
         print(df_raw[:head].to_json(orient="index"))
     elif debug == 1:
-        print("ÅÅÐòÊý¾Ý£º",df_sort1[:head])
-        print("ÅÅÐò²ÎÊý£º",df_sort.ix[:,"alg"][:head])
+        print("ÅÅÐòÎÄµµ£º\n",df_sort)
+        return df_sort
     elif debug == 2:
-        print("- df_raw£º%r \n- df_sort£º%r \n- algorithm£º%r \n- lbd£º%r \n- head£º%r \n- debug£º%r \n- List£º%r \n"%(df_raw.shape,df_sort.shape,algorithm,lbd,head,debug,list(df_sort.index[:head])))
+        print("- df_raw£º%r \n- df_sort£º%r \n- algorithm£º%r \n- alpha£º%r \n- head£º%r \n- debug£º%r \n- List£º%r \n"%(df_raw.shape,df_sort.shape,algorithm,alpha,head,debug,list(df_sort.index[:head])))
     elif debug == 8:
         return df_raw[:head]
     elif debug == 9:
