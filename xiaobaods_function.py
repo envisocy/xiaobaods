@@ -43,7 +43,7 @@ def storegrouplist():
 # 将没有后缀的情况加入列表，避免误搜
 stored = ["","官方旗舰店","旗舰店","服饰旗舰店","服饰专营店","专卖店"]
 # Function
-def xiaobaods_a(date="",category="牛仔裤",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="热销排名",fillna="",debug=0,path="",keyword="日期：",storechoice="",storegroupchoice=""):
+def xiaobaods_a(date="",category="牛仔裤",length=7,SQL="xiaobaods",table="bc_attribute_granularity_sales",variable="热销排名",fillna="",debug=0,path="",keyword="日期：",titlechoice="",storechoice="",storegroupchoice=""):
     # 2017-04-11 添加keyword隐藏参数：'日期：'
     # 2017-04-12 修复可能引起数据库检索合并重复值的BUG
     # 2017-04-28 更新了MySQL检索索引和优化了查询函数，使得检索时间缩短为原来的3%，需对检索结果准确性进行观察认证
@@ -100,6 +100,9 @@ def xiaobaods_a(date="",category="牛仔裤",length=7,SQL="xiaobaods",table="bc_att
     conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db=SQL_msg[SQL]["db"])
     df = pd.io.sql.read_sql_query(sql_select_f+sql_select_m+sql_select_e,conn)
     conn.close()
+    # titlechoice
+    if titlechoice !="":
+        df = df[[titlechoice in i for i in df["商品信息"]]]
     # storegroup
     if storechoice !="":
         storechoice = [storechoice+i for i in stored]
