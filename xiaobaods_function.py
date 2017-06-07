@@ -49,6 +49,7 @@ def xiaobaods_a(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",table="bc_att
     # 2017-04-28 ¸üÐÂÁËMySQL¼ìË÷Ë÷ÒýºÍÓÅ»¯ÁË²éÑ¯º¯Êý£¬Ê¹µÃ¼ìË÷Ê±¼äËõ¶ÌÎªÔ­À´µÄ3%£¬Ðè¶Ô¼ìË÷½á¹û×¼È·ÐÔ½øÐÐ¹Û²ìÈÏÖ¤
     # 2017-05-15 storechoice > storegroup choice²ÎÊý,¶Ô½á¹û½øÐÐÉ¸Ñ¡£¬ºó×ºÈÝ´í
     # 2017-06-03 fillna¸üÐÂ£¬Ìí¼Óbd
+    # 2017-06-06 Ìí¼Ó±êÌâÉ¸Ñ¡²ÎÊý titlechoice
     time_s = time.time()
     latest_date=datetime.datetime.today().date()-datetime.timedelta(1)
     if category not in ["Å£×Ð¿ã","´òµ×¿ã","ÐÝÏÐ¿ã"]:
@@ -242,7 +243,7 @@ def xiaobaods_w(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
             print("> Êä³öCSVÎÄ¼þ£º",path,",",csv_filename)
         except Exception as e:
             print("> Êä³öCSVÎÄ¼þÊ§°Ü£¬´íÎóÔ­Òò£º",e)
-def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha="",head=5,debug=0,path=""):
+def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha="",head=10,debug=0,path=""):
     # 2017-04-12 Algorithm EDT(Removed 06-03).
     # 2017-06-03 Rewrite Algorithm Log.
     if len(df_raw) > len(df_sort):
@@ -271,6 +272,8 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha="",head=5,debug=0,path=""):
         df_raw = df_raw.loc[df_sort.index,:]
     else:
         head = len(df_raw)
+    # reset_index
+    df_raw.reset_index(drop=True,inplace = True)
     # Output
     if debug not in [1,2,8,9]:
         print(df_raw[:head].to_json(orient="index"))
