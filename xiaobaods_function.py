@@ -243,9 +243,22 @@ def xiaobaods_w(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
             print("> Êä³öCSVÎÄ¼þ£º",path,",",csv_filename)
         except Exception as e:
             print("> Êä³öCSVÎÄ¼þÊ§°Ü£¬´íÎóÔ­Òò£º",e)
-def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha="",head=10,debug=0,path=""):
+def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha=[0.8,0.7,1.0,0.8,1.2,10,1000],head=10,debug=0,path=""):
     # 2017-04-12 Algorithm EDT(Removed 06-03).
     # 2017-06-03 Rewrite Algorithm Log.
+    # 2017-06-08 Rewrite Ensamble Algorithm
+    '''
+    Ensamble Algorithm ²ÎÊý£º
+    - Std Weight default = 0.8
+    - Range Weight default = 0.7
+    - Mean Gradient default = 1.0
+    - Jump Gradient default = 0.8
+    - Recent Gradient default = 1.2
+    - Rank Weight(Square) default = 10
+    - Plus default = 1000
+    '''
+    if len(alpha) != 7:
+        alpha = [0.8,0.7,1.0,0.8,1.2,10,1000]
     if len(df_raw) > len(df_sort):
         df_raw = df_raw.ix[:len(df_sort),:]
     elif len(df_raw) < len(df_sort):
@@ -254,24 +267,11 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha="",head=10,debug=0,path=""):
         head = 3
     elif head>len(df_raw):
         head = len(df_raw)
-    if algorithm in [1,2]:
-        # Log. Algorithm
-        if alpha not in [2,"2","e",10,"10","1p"]:
-            alpha = "10"
-        def xlog(x):
-            if alpha ==2 or alpha =="2":
-                return np.log2(x)
-            elif alpha=="e":
-                return np.log(x)
-            elif alpha=="1p":
-                return np.log1p(x)
-            else: # 10 or "10"
-                return np.log10(x)
-        df_sort['alg'] = (xlog(df_sort.iloc[:,12].tolist())+xlog(df_sort.iloc[:,13].tolist())+xlog(df_sort.iloc[:,14].tolist()))/3-(xlog(df_sort.iloc[:,8].tolist())+xlog(df_sort.iloc[:,9].tolist())+xlog(df_sort.iloc[:,10].tolist())+xlog(df_sort.iloc[:,11].tolist()))/4
-        df_sort.sort_values(['alg'],inplace=True)
-        df_raw = df_raw.loc[df_sort.index,:]
-    else:
-        head = len(df_raw)
+    # Ensamble Algorithm
+    df_sort['alg'] = (np.std(df_sort.iloc[:,8:],axis=1)*alpha[0]+(np.max(df_sort.iloc[:,8:],axis=1)-np.min(df_sort.iloc[:,8:],axis=1))*alpha[1]+(np.mean(df_sort.iloc[:,8:],axis=1)-df_sort.iloc[:,-1])*alpha[2]+(np.mean(df_sort.iloc[:,11:13],axis=1)-np.mean(df_sort.iloc[:,-2:],axis=1))*alpha[3]+(df_sort.iloc[:,-2]-df_sort.iloc[:,-1])*alpha[4])*(np.rint((-np.log2(df_sort.iloc[:,0].tolist())+10)**alpha[5]/((-np.log2(1)+10))**alpha[5]*alpha[6])+1)*(np.sign(np.median(df_sort.iloc[:,8:],axis=1)-df_sort.iloc[:,12]))
+    #df_sort['alg'] = (xlog(df_sort.iloc[:,12].tolist())+xlog(df_sort.iloc[:,13].tolist())+xlog(df_sort.iloc[:,14].tolist()))/3-(xlog(df_sort.iloc[:,8].tolist())+xlog(df_sort.iloc[:,9].tolist())+xlog(df_sort.iloc[:,10].tolist())+xlog(df_sort.iloc[:,11].tolist()))/4
+    df_sort.sort_values(['alg'],inplace=True)
+    df_raw = df_raw.loc[df_sort.index,:]
     # reset_index
     df_raw.reset_index(drop=True,inplace = True)
     # Output
