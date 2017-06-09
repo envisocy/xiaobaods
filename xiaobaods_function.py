@@ -243,7 +243,7 @@ def xiaobaods_w(date="",category="Å£×Ð¿ã",length=7,SQL="xiaobaods",choice="ÈÈËÑº
             print("> Êä³öCSVÎÄ¼þ£º",path,",",csv_filename)
         except Exception as e:
             print("> Êä³öCSVÎÄ¼þÊ§°Ü£¬´íÎóÔ­Òò£º",e)
-def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha=[0.8,0.7,1.0,0.8,1.2,10,1000],head=10,debug=0,path=""):
+def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha=[0.8,0.7,0.6,1.0,1.4,6,1000],head=10,debug=0,path=""):
     # 2017-04-12 Algorithm EDT(Removed 06-03).
     # 2017-06-03 Rewrite Algorithm Log.
     # 2017-06-08 Rewrite Ensamble Algorithm
@@ -257,8 +257,13 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha=[0.8,0.7,1.0,0.8,1.2,10,1000],
     - Rank Weight(Square) default = 10
     - Plus default = 1000
     '''
+    # ×Ö·û´®ÐÎÊ½µÄalpha²ÎÊý×ª»»
+    try:
+        alpha = [float(i) for i in alpha[1:-1].split(",")]
+    except:
+        pass
     if len(alpha) != 7:
-        alpha = [0.8,0.7,1.0,0.8,1.2,10,1000]
+        alpha = [0.8,0.7,0.6,1.0,1.4,6,1000]
     if len(df_raw) > len(df_sort):
         df_raw = df_raw.ix[:len(df_sort),:]
     elif len(df_raw) < len(df_sort):
@@ -268,20 +273,29 @@ def xiaobaods_ws(df_raw,df_sort,algorithm=1,alpha=[0.8,0.7,1.0,0.8,1.2,10,1000],
     elif head>len(df_raw):
         head = len(df_raw)
     # Ensamble Algorithm
-    df_sort['alg'] = (np.std(df_sort.iloc[:,8:],axis=1)*alpha[0]+(np.max(df_sort.iloc[:,8:],axis=1)-np.min(df_sort.iloc[:,8:],axis=1))*alpha[1]+(np.mean(df_sort.iloc[:,8:],axis=1)-df_sort.iloc[:,-1])*alpha[2]+(np.mean(df_sort.iloc[:,11:13],axis=1)-np.mean(df_sort.iloc[:,-2:],axis=1))*alpha[3]+(df_sort.iloc[:,-2]-df_sort.iloc[:,-1])*alpha[4])*(np.rint((-np.log2(df_sort.iloc[:,0].tolist())+10)**alpha[5]/((-np.log2(1)+10))**alpha[5]*alpha[6])+1)*(np.sign(np.median(df_sort.iloc[:,8:],axis=1)-df_sort.iloc[:,12]))
+    df_sort['alg'] = (np.std(df_sort.iloc[:,8:],axis=1)*alpha[0]+(np.max(df_sort.iloc[:,8:],axis=1)-np.min(df_sort.iloc[:,8:],axis=1))*alpha[1]+(np.mean(df_sort.iloc[:,8:],axis=1)-df_sort.iloc[:,-1])*alpha[2]+(np.mean(df_sort.iloc[:,11:13],axis=1)-np.mean(df_sort.iloc[:,-2:],axis=1))*alpha[3]+(df_sort.iloc[:,-2]-df_sort.iloc[:,-1])*alpha[4])*(np.rint((-np.log2(df_sort.iloc[:,0].tolist())+10)**alpha[5]/((-np.log2(1)+10))**alpha[5]*alpha[6]*10)/10+1)*(np.sign(np.median(df_sort.iloc[:,8:],axis=1)-df_sort.iloc[:,12]))
     #df_sort['alg'] = (xlog(df_sort.iloc[:,12].tolist())+xlog(df_sort.iloc[:,13].tolist())+xlog(df_sort.iloc[:,14].tolist()))/3-(xlog(df_sort.iloc[:,8].tolist())+xlog(df_sort.iloc[:,9].tolist())+xlog(df_sort.iloc[:,10].tolist())+xlog(df_sort.iloc[:,11].tolist()))/4
     df_sort.sort_values(['alg'],inplace=True)
     df_raw = df_raw.loc[df_sort.index,:]
     # reset_index
     df_raw.reset_index(drop=True,inplace = True)
     # Output
-    if debug not in [1,2,8,9]:
+    if debug not in [1,2,7,8,9]:
         print(df_raw[:head].to_json(orient="index"))
     elif debug == 1:
         print("ÅÅÐòÎÄµµ£º\n",df_sort)
         return df_sort
     elif debug == 2:
         print("- df_raw£º%r \n- df_sort£º%r \n- algorithm£º%r \n- alpha£º%r \n- head£º%r \n- debug£º%r \n- List£º%r \n"%(df_raw.shape,df_sort.shape,algorithm,alpha,head,debug,list(df_sort.index[:head])))
+    elif debug == 7:
+        df_sort['0_std'] = (np.std(df_sort.iloc[:,8:15],axis=1))*alpha[0]
+        df_sort['1_rgn'] = (np.max(df_sort.iloc[:,8:15],axis=1)-np.min(df_sort.iloc[:,8:15],axis=1))*alpha[1]
+        df_sort['2_mg'] = (np.mean(df_sort.iloc[:,8:15],axis=1)-df_sort.iloc[:,14])*alpha[2]
+        df_sort['3_jg'] = (np.mean(df_sort.iloc[:,11:13],axis=1)-np.mean(df_sort.iloc[:,13:15],axis=1))*alpha[3]
+        df_sort['4_rg'] = (df_sort.iloc[:,13]-df_sort.iloc[:,14])*alpha[4]
+        df_sort['0-4 sum'] = df_sort['0_std']+df_sort['1_rgn']+df_sort['2_mg']+df_sort['3_jg']+df_sort['4_rg']
+        df_sort['5-6 pst'] = np.rint((-np.log2(df_sort.iloc[:,0].tolist())+10)**alpha[5]/((-np.log2(1)+10))**alpha[5]*alpha[6]*10)/10+1
+        return df_sort
     elif debug == 8:
         return df_raw[:head]
     elif debug == 9:
