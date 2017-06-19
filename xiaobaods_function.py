@@ -478,4 +478,60 @@ def xiaobaods_m(date="",SQL="xiaobaods",category="牛仔裤",display="year",vs="ony
             df.to_csv(path+"\\"+csv_filename)
             print("> 输出CSV文件：",path,",",csv_filename)
         except Exception as e:
-            print("> 输出CSV文件失败，错误原因：",e)        
+            print("> 输出CSV文件失败，错误原因：",e)
+def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="裤型",variable="成交量",debug=0,path=""):           
+    '''
+    # 2017-06-19 针对生E经数据的平移展示
+    '''
+    table = 'shengejing_category'
+    time_s = time.time()
+    if date =='':
+        date = datetime.date(2017,5,1)
+    else:
+        date=parse(date).date()  # 修改日期格式
+    if date.day != 1:
+        date = datetime.date(date.year,date.month,1)
+    if date < datetime.date(2011,4,1):
+        date = datetime.date(2011,4,1)
+    if variable not in ["成交量","销售额","高质宝贝数"]:
+        variable ="成交量"
+    if category not in ["牛仔裤","休闲裤","打底裤","半身裙","大码女装","棉裤羽绒裤","西装裤正装裤","连衣裙"]:
+        category ="牛仔裤"
+    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db="baoersqlexternal")
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT `属性` from shengejing_category where `类目`='"+category+"' GROUP BY `属性`;")
+        attribute_tuple = cursor.fetchall()
+        attribute_list = []
+        for  i in range(len(attribute_tuple)):
+            attribute_list.append(attribute_tuple[i][0])
+    except Exception as e:
+        return e
+    if attribute not in attribute_list:
+        attribute = attribute_list[0]
+    # Main Program.
+    sql_select = "select `属性值`,`"+variable+"` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`="+datetime.datetime.strftime(date,"%Y%m%d")+";"
+    df = pd.io.sql.read_sql_query(sql_select,conn)
+    conn.close()
+    if debug not in [1,2,8,9]:
+        print (df.to_json(orient="index"))
+    elif debug == 1:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print( "  SQL: %r \n- category: %r \n- date: %r "%(sql_select,category,str(date)))
+    elif debug == 2:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print("- date：%r \n- category： %r\n- attribute： %r\n- variable： %r\n- debug: %r\n- path: %r"%(str(date),category,attribute,variable,debug,path))
+    elif debug == 8:
+        return df
+    elif debug == 9:
+        import os
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        path_default=os.path.join(os.path.expanduser("~"), 'Desktop')
+        if not os.path.isdir(path):
+            path = path_default
+        csv_filename="【数据组】["+table+"_"+category+"_"+attribute+"_"+variable+"_"+datetime.datetime.strftime(date,"%Y%m")+".csv"
+        try:
+            df.to_csv(path+"\\"+csv_filename)
+            print("> 输出CSV文件：",path,",",csv_filename)
+        except Exception as e:
+            print("> 输出CSV文件失败，错误原因：",e)
