@@ -400,13 +400,13 @@ def xiaobaods_c(date="",category="牛仔裤",classification="款式",attributes="铅笔
 def xiaobaods_m(date="",SQL="xiaobaods",category="牛仔裤",display="year",vs="onyear",variable="all",debug=0,path=""):
     '''
     # 2017-06-02 针对Panel的展示图形
-    date default=''
-    category default='牛仔裤','打底裤','休闲裤'
-    display default='year','month','quarter','halfyear'
-    vs default='onyear','sameperiod'
-    variable default='all',element in columns
-    debug default=0,1,2,8,9
-    path default=""
+    - date default=''
+    - category default='牛仔裤','打底裤','休闲裤'
+    - display default='year','month','quarter','halfyear'
+    - vs default='onyear','sameperiod'
+    - variable default='all',element in columns
+    - debug default=0,1,2,8,9
+    - path default=""
     '''
     table = 'bc_industry_market'
     time_s = time.time()
@@ -482,6 +482,12 @@ def xiaobaods_m(date="",SQL="xiaobaods",category="牛仔裤",display="year",vs="ony
 def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="裤型",variable="成交量",debug=0,path=""):           
     '''
     # 2017-06-19 针对生E经数据的平移展示
+    - SQL 数据库别名 "xiaobaods" or "Local"
+    - category 类别 "牛仔裤","休闲裤","打底裤","半身裙","大码女装","棉裤羽绒裤","西装裤正装裤","连衣裙","成交量分布"（子行业分布数据）
+    - attribute 对应的属性项目 *
+    - variable 显示变量 "成交量","销售额","高质宝贝数","all"（显示全部）
+    - debug 显示控制 0,1,2,8,9
+    - path 输出路径，当debug为9时起效
     '''
     table = 'shengejing_category'
     time_s = time.time()
@@ -493,9 +499,9 @@ def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="裤型",varia
         date = datetime.date(date.year,date.month,1)
     if date < datetime.date(2011,4,1):
         date = datetime.date(2011,4,1)
-    if variable not in ["成交量","销售额","高质宝贝数"]:
+    if variable not in ["成交量","销售额","高质宝贝数","all"]:
         variable ="成交量"
-    if category not in ["牛仔裤","休闲裤","打底裤","半身裙","大码女装","棉裤羽绒裤","西装裤正装裤","连衣裙"]:
+    if category not in ["牛仔裤","休闲裤","打底裤","半身裙","大码女装","棉裤羽绒裤","西装裤正装裤","连衣裙","成交量分布"]:
         category ="牛仔裤"
     conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db="baoersqlexternal")
     try:
@@ -510,7 +516,10 @@ def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="裤型",varia
     if attribute not in attribute_list:
         attribute = attribute_list[0]
     # Main Program.
-    sql_select = "select `属性值`,`"+variable+"` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`="+datetime.datetime.strftime(date,"%Y%m%d")+";"
+    if variable != "all":
+        sql_select = "select `属性值`,`"+variable+"` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`="+datetime.datetime.strftime(date,"%Y%m%d")+";"
+    else:
+        sql_select = "select `属性值`,`成交量`,`销售额`,`高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`="+datetime.datetime.strftime(date,"%Y%m%d")+";"
     df = pd.io.sql.read_sql_query(sql_select,conn)
     conn.close()
     if debug not in [1,2,8,9]:
