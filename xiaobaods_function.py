@@ -512,8 +512,11 @@ def xiaobaods_e(date="",SQL="xiaobaods",category="Å£×Ð¿ã",attribute="¿ãÐÍ",varia
         for  i in range(len(attribute_tuple)):
             attribute_list.append(attribute_tuple[i][0])
     except Exception as e:
-        return e
-    if attribute not in attribute_list:
+        print(e)
+    if attribute=="list":
+        print (pd.Series(attribute_list).to_json(orient="index"))
+        return attribute_list
+    elif attribute not in attribute_list:
         attribute = attribute_list[0]
     # Main Program.
     if variable != "all":
