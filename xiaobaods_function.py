@@ -479,7 +479,7 @@ def xiaobaods_m(date="",SQL="xiaobaods",category="牛仔裤",display="year",vs="ony
             print("> 输出CSV文件：",path,",",csv_filename)
         except Exception as e:
             print("> 输出CSV文件失败，错误原因：",e)
-def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="裤型",variable="成交量",debug=0,path=""):           
+def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="腰型",variable="成交量",debug=0,path=""):           
     '''
     # 2017-06-19 针对生E经数据的平移展示
     - SQL 数据库别名 "xiaobaods" or "Local"
@@ -525,6 +525,8 @@ def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="裤型",varia
         sql_select = "select `属性值`,`成交量`,`销售额`,`高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`="+datetime.datetime.strftime(date,"%Y%m%d")+";"
     df = pd.io.sql.read_sql_query(sql_select,conn)
     conn.close()
+    df.sort_values("成交量",ascending=False,inplace=True)
+    df.reset_index(drop=True,inplace=True)
     if debug not in [1,2,8,9]:
         print (df.to_json(orient="index"))
     elif debug == 1:

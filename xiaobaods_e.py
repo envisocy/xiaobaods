@@ -9,4 +9,4 @@ if __name__ == "__main__":
     except:
         argv ={}
 # us function e
-fc.xiaobaods_e(date=argv.get("date",""),category=argv.get("category","牛仔裤"),SQL=argv.get("SQL","xiaobaods"),attribute=argv.get("attribute","热搜核心词"),variable=argv.get("variable","成交量"),debug=argv.get("debug",""),path=argv.get("path",""))
+fc.xiaobaods_e(date=argv.get("date",""),category=argv.get("category","牛仔裤"),SQL=argv.get("SQL","xiaobaods"),attribute=argv.get("attribute","腰型"),variable=argv.get("variable","成交量"),debug=argv.get("debug",""),path=argv.get("path",""))
