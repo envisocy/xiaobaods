@@ -107,7 +107,7 @@ def xiaobaods_a(date="",category="牛仔裤",length=7,SQL="xiaobaods",table="bc_att
     # storegroup
     if storechoice !="":
         storechoice = [storechoice+i for i in stored]
-        df = df[df["所属店铺"].isin(storechoice)]
+        df = df[df["所属店铺"].isin(storechoice)] 
     elif storegroupchoice != "":
         df = df[df["所属店铺"].isin(storegroup[storegroupchoice])]
     if fillna == "bd":
@@ -544,6 +544,86 @@ def xiaobaods_e(date="",SQL="xiaobaods",category="牛仔裤",attribute="腰型",varia
         if not os.path.isdir(path):
             path = path_default
         csv_filename="【数据组】["+table+"_"+category+"_"+attribute+"_"+variable+"_"+datetime.datetime.strftime(date,"%Y%m")+".csv"
+        try:
+            df.to_csv(path+"\\"+csv_filename)
+            print("> 输出CSV文件：",path,",",csv_filename)
+        except Exception as e:
+            print("> 输出CSV文件失败，错误原因：",e)
+def xiaobaods_et(SQL="xiaobaods",category="牛仔裤",attribute="腰型",feature="",variable="all",stats=0,debug=0,path=""):
+    '''
+    # 2017-06-30 针对生E经数据的趋势取数
+    - SQL 数据库别名 "xiaobaods" or "Local"
+    - category 类别 "牛仔裤","休闲裤","打底裤","半身裙","大码女装","棉裤羽绒裤","西装裤正装裤","连衣裙","成交量分布"（子行业分布数据）
+    - attribute 对应的属性项目 *
+    - feature 对应属性内的特征/"list" 返回列表
+    - variable 显示变量 "成交量","销售额","高质宝贝数","all"（显示全部）
+    - stats 统计量 0 为不变换；1为百分比；
+    - debug 显示控制 0,1,2,8,9
+    - path 输出路径，当debug为9时起效
+    '''
+    table = 'shengejing_category'
+    time_s = time.time()
+    if variable not in ["成交量","销售额","高质宝贝数","all"]:
+        variable ="all"
+    if category not in ["牛仔裤","休闲裤","打底裤","半身裙","大码女装","棉裤羽绒裤","西装裤正装裤","连衣裙","成交量分布"]:
+        category ="成交量分布"
+    conn = pymysql.connect(host=SQL_msg[SQL]["host"], port=int(SQL_msg[SQL]["port"]), user=SQL_msg[SQL]["user"], passwd=SQL_msg[SQL]["passwd"], charset=SQL_msg[SQL]["charset"], db="baoersqlexternal")
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT `属性` from shengejing_category where `类目`='"+category+"' GROUP BY `属性`;")
+        attribute_tuple = cursor.fetchall()
+        attribute_list = []
+        for  i in range(len(attribute_tuple)):
+            attribute_list.append(attribute_tuple[i][0])
+    except Exception as e:
+        print(e)
+    if attribute not in attribute_list:
+        attribute = attribute_list[0]
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT `属性值` from shengejing_category where `类目`='"+category+"' and 属性='"+attribute+"' GROUP BY `属性值`;")
+        feature_tuple = cursor.fetchall()
+        feature_list = []
+        for  i in range(len(feature_tuple)):
+            feature_list.append(feature_tuple[i][0])
+    except Exception as e:
+        print(e)
+    if feature=="list":
+        print (pd.Series(feature_list).to_json(orient="index"))
+        return feature_list
+    elif feature not in feature_list:
+        feature = feature_list[0]
+    # Main Program.
+    if variable != "all":
+        sql_select = "select `日期`,`"+variable+"` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `属性值`='"+feature+"' ORDER BY `日期`;"
+    else:
+        sql_select = "select `日期`,`成交量`,`销售额`,`高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `属性值`='"+feature+"' ORDER BY `日期`;"
+    df = pd.io.sql.read_sql_query(sql_select,conn)
+    if stats==1:
+        if variable != "all":
+            sql_select = "select `日期`,sum(`"+variable+"`) as "+variable+" from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`>="+datetime.datetime.strftime(df["日期"].min(),'%Y%m%d')+" and `日期`<="+datetime.datetime.strftime(df["日期"].max(),'%Y%m%d')+" GROUP BY `日期`,`属性` ORDER BY `日期`;"
+        else:
+            sql_select = "select `日期`,sum(`成交量`) as `成交量`,sum(`销售额`) as `销售额`,sum(`高质宝贝数`) as `高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`>="+datetime.datetime.strftime(df["日期"].min(),'%Y%m%d')+" and `日期`<="+datetime.datetime.strftime(df["日期"].max(),'%Y%m%d')+" GROUP BY `日期`,`属性` ORDER BY `日期`;"
+        df_sum = pd.io.sql.read_sql_query(sql_select,conn)
+        df = pd.concat([df.loc[:,"日期"],df.iloc[:,1:]/df_sum.iloc[:,1:]],axis=1)
+    conn.close()
+    if debug not in [1,2,8,9]:
+        print (df.to_json(orient="index"))
+    elif debug == 1:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print( "  SQL: %r \n- category: %r \n- attribute: %r "%(sql_select,category,attribute))
+    elif debug == 2:
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        print("- category： %r\n- attribute： %r\n- variable： %r\n- debug: %r\n- path: %r\n- min_date：%r \n- max_date：%r \n"%(category,attribute,variable,debug,path,str(df["日期"].min()),str(df["日期"].max())))
+    elif debug == 8:
+        return df
+    elif debug == 9:
+        import os
+        print ("- Running time：%.4f s"%(time.time()-time_s))
+        path_default=os.path.join(os.path.expanduser("~"), 'Desktop')
+        if not os.path.isdir(path):
+            path = path_default
+        csv_filename="【数据组】["+table+"_"+category+"_"+attribute+"_"+variable+"_"+feature+".csv"
         try:
             df.to_csv(path+"\\"+csv_filename)
             print("> 输出CSV文件：",path,",",csv_filename)
