@@ -591,6 +591,9 @@ def xiaobaods_et(SQL="xiaobaods",category="牛仔裤",attribute="腰型",feature="",v
     if feature=="list":
         print (pd.Series(feature_list).to_json(orient="index"))
         return feature_list
+    elif feature =="sum" or feature =="all":
+        stats = 2
+        feature = feature_list[0]
     elif feature not in feature_list:
         feature = feature_list[0]
     # Main Program.
@@ -599,13 +602,15 @@ def xiaobaods_et(SQL="xiaobaods",category="牛仔裤",attribute="腰型",feature="",v
     else:
         sql_select = "select `日期`,`成交量`,`销售额`,`高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `属性值`='"+feature+"' ORDER BY `日期`;"
     df = pd.io.sql.read_sql_query(sql_select,conn)
+    if variable != "all":
+        sql_select_sum = "select `日期`,sum(`"+variable+"`) as "+variable+" from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`>="+datetime.datetime.strftime(df["日期"].min(),'%Y%m%d')+" and `日期`<="+datetime.datetime.strftime(df["日期"].max(),'%Y%m%d')+" GROUP BY `日期`,`属性` ORDER BY `日期`;"
+    else:
+        sql_select_sum = "select `日期`,sum(`成交量`) as `成交量`,sum(`销售额`) as `销售额`,sum(`高质宝贝数`) as `高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`>="+datetime.datetime.strftime(df["日期"].min(),'%Y%m%d')+" and `日期`<="+datetime.datetime.strftime(df["日期"].max(),'%Y%m%d')+" GROUP BY `日期`,`属性` ORDER BY `日期`;"
+    df_sum = pd.io.sql.read_sql_query(sql_select_sum,conn)
     if stats==1:
-        if variable != "all":
-            sql_select = "select `日期`,sum(`"+variable+"`) as "+variable+" from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`>="+datetime.datetime.strftime(df["日期"].min(),'%Y%m%d')+" and `日期`<="+datetime.datetime.strftime(df["日期"].max(),'%Y%m%d')+" GROUP BY `日期`,`属性` ORDER BY `日期`;"
-        else:
-            sql_select = "select `日期`,sum(`成交量`) as `成交量`,sum(`销售额`) as `销售额`,sum(`高质宝贝数`) as `高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`>="+datetime.datetime.strftime(df["日期"].min(),'%Y%m%d')+" and `日期`<="+datetime.datetime.strftime(df["日期"].max(),'%Y%m%d')+" GROUP BY `日期`,`属性` ORDER BY `日期`;"
-        df_sum = pd.io.sql.read_sql_query(sql_select,conn)
         df = pd.concat([df.loc[:,"日期"],df.iloc[:,1:]/df_sum.iloc[:,1:]],axis=1)
+    if stats==2:
+        df = df_sum
     conn.close()
     if debug not in [1,2,8,9]:
         print (df.to_json(orient="index"))
