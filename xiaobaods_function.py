@@ -554,8 +554,8 @@ def xiaobaods_et(SQL="xiaobaods",category="牛仔裤",attribute="腰型",feature="",v
     # 2017-06-30 针对生E经数据的趋势取数
     - SQL 数据库别名 "xiaobaods" or "Local"
     - category 类别 "牛仔裤","休闲裤","打底裤","半身裙","大码女装","棉裤羽绒裤","西装裤正装裤","连衣裙","成交量分布"（子行业分布数据）
-    - attribute 对应的属性项目 *
-    - feature 对应属性内的特征/"list" 返回列表
+    - attribute 对应的属性项目/"list" 返回attribut列表
+    - feature 对应属性内的特征/"list" 返回feature列表/"sum"或"all" 计算当前属性所有特征的和
     - variable 显示变量 "成交量","销售额","高质宝贝数","all"（显示全部）
     - stats 统计量 0 为不变换；1为百分比；
     - debug 显示控制 0,1,2,8,9
@@ -577,7 +577,10 @@ def xiaobaods_et(SQL="xiaobaods",category="牛仔裤",attribute="腰型",feature="",v
             attribute_list.append(attribute_tuple[i][0])
     except Exception as e:
         print(e)
-    if attribute not in attribute_list:
+    if attribute=="list":
+        print (pd.Series(attribute_list).to_json(orient="index"))
+        return attribute_list
+    elif attribute not in attribute_list:
         attribute = attribute_list[0]
     try:
         cursor = conn.cursor()
