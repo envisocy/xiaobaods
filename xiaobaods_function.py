@@ -600,10 +600,16 @@ def xiaobaods_et(SQL="xiaobaods",category="牛仔裤",attribute="腰型",feature="",v
     elif feature not in feature_list:
         feature = feature_list[0]
     # Main Program.
-    if variable != "all":
-        sql_select = "select `日期`,`"+variable+"` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `属性值`='"+feature+"' ORDER BY `日期`;"
+    if stats !=2:
+        if variable != "all":
+            sql_select = "select `日期`,`"+variable+"` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `属性值`='"+feature+"' ORDER BY `日期`;"
+        elif variable == "all": 
+            sql_select = "select `日期`,`成交量`,`销售额`,`高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `属性值`='"+feature+"' ORDER BY `日期`;"
     else:
-        sql_select = "select `日期`,`成交量`,`销售额`,`高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `属性值`='"+feature+"' ORDER BY `日期`;"
+        if variable != "all":
+            sql_select = "select `日期`,sum(`"+variable+"`) as "+variable+" from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' GROUP BY `日期` ORDER BY `日期`;"
+        elif variable == "all":
+            sql_select = "select `日期`,sum(`成交量`) as `成交量`,sum(`销售额`) as `销售额`,sum(`高质宝贝数`) as `高质宝贝数` from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' GROUP BY `日期` ORDER BY `日期`;"
     df = pd.io.sql.read_sql_query(sql_select,conn)
     if variable != "all":
         sql_select_sum = "select `日期`,sum(`"+variable+"`) as "+variable+" from shengejing_category where `类目`='"+category+"' and `属性`='"+attribute+"' and `日期`>="+datetime.datetime.strftime(df["日期"].min(),'%Y%m%d')+" and `日期`<="+datetime.datetime.strftime(df["日期"].max(),'%Y%m%d')+" GROUP BY `日期`,`属性` ORDER BY `日期`;"
@@ -619,10 +625,10 @@ def xiaobaods_et(SQL="xiaobaods",category="牛仔裤",attribute="腰型",feature="",v
         print (df.to_json(orient="index"))
     elif debug == 1:
         print ("- Running time：%.4f s"%(time.time()-time_s))
-        print( "  SQL: %r \n- category: %r \n- attribute: %r "%(sql_select,category,attribute))
+        print( "  SQL: %r \n- SQL_sum: %r \n- category: %r \n- attribute: %r "%(sql_select,sql_select_sum,category,attribute))
     elif debug == 2:
         print ("- Running time：%.4f s"%(time.time()-time_s))
-        print("- category： %r\n- attribute： %r\n- variable： %r\n- debug: %r\n- path: %r\n- min_date：%r \n- max_date：%r \n"%(category,attribute,variable,debug,path,str(df["日期"].min()),str(df["日期"].max())))
+        print("- category： %r\n- attribute： %r\n- variable： %r\n- debug: %r\n- path: %r\n- min_date：%r \n- max_date：%r \n- stats：%r"%(category,attribute,variable,debug,path,str(df["日期"].min()),str(df["日期"].max()),stats))
     elif debug == 8:
         return df
     elif debug == 9:
